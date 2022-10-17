@@ -76,7 +76,7 @@ jobs:
           tickets=$(git log --pretty=oneline \
             $(git tag --sort=-committerdate -l  "*.*.*" | head -2 | tail -1 | grep . || git rev-list --max-parents=0 HEAD)..\
             $(git tag --sort=-committerdate -l  "*.*.*" | head -1 | grep . || echo HEAD) | \
-            grep -oP "${{ inpugs.jira-project-key }}-\d{1,}" | sort | uniq | sed 's/^\|$/"/g' | xargs -r | sed -e 's/ /,/g')  
+            grep -oP "${{ inputs.jira-project-key }}-\d{1,}" | sort | uniq | sed 's/^\|$/"/g' | xargs -r | sed -e 's/ /,/g')  
           echo "::set-output name=tickets::$tickets"
 
       - uses: StalemateInc/jira-release-action@main
