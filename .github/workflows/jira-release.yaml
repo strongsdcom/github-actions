@@ -32,10 +32,6 @@ on:
       jira-token:
         required: true
 
-# concurrency:
-#   group: ${{ github.workflow }}-${{ github.ref }}
-#   cancel-in-progress: true
-
 jobs:
   jira-release:
     name: Release
@@ -52,6 +48,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         if: ${{ steps.release.outputs.release_created }}
+        with:
+          fetch-depth: 0
 
       - name: Tag major and minor versions
         if: ${{ steps.release.outputs.release_created }}
@@ -72,11 +70,10 @@ jobs:
         id: collect-jira-issues
         if: ${{ steps.release.outputs.release_created }}
         run: |
-          git fetch --tags origin
           tickets=$(git log --pretty=oneline \
             $(git tag --sort=-committerdate -l  "*.*.*" | head -2 | tail -1 | grep . || git rev-list --max-parents=0 HEAD)..\
             $(git tag --sort=-committerdate -l  "*.*.*" | head -1 | grep . || echo HEAD) | \
-            grep -oP "${{ inputs.jira-project-key }}-\d{1,}" | sort | uniq | sed 's/^\|$/"/g' | xargs -r | sed -e 's/ /,/g')  
+            grep -oP "${{ inputs.jira-project-key }}-\d{1,}" | sort | uniq | sed 's/^\|$/"/g' | xargs -r | sed -e 's/ /,/g')
           echo "::set-output name=tickets::$tickets"
 
       - uses: StalemateInc/jira-release-action@main
