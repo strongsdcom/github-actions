@@ -13,7 +13,7 @@ jobs:
   release-please:
     uses: bit4coinBV/github-actions/.github/workflows/release-please.yaml@main
     secrets:
-      github-token: ${{ secrets.GITHUB_TOKEN }}
+      github-token: ${{ secrets.MY_CUSTOM_TOKEN }} # is required only for separate jira release file
     with:
       release-type: elixir
       extra-files: |
