@@ -1,24 +1,24 @@
-# Important!
-# By default Release Please uses secrets.GITHUB_TOKEN which does not fire published release event
-# Use this example only with passed custom token to release-please workflow
-
-name: Jira Release
+name: Release
 
 on:
-  release:
-    types:
-      - published
+  push:
+    branches:
+      - master
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  release-please:
+    uses: bit4coinBV/github-actions/.github/workflows/release-please.yaml@main
   jira-release:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release-created }
     uses: bit4coinBV/github-actions/.github/workflows/jira-release.yaml@main
     secrets:
       email: ${{ secrets.JIRA_EMAIL }}
       token: ${{ secrets.JIRA_TOKEN }}
     with:
       project-key: 'SRE'
-      sub-domain: 'hyphe'
+      sub-domain: 'hyphe'  

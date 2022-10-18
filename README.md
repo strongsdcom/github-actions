@@ -11,4 +11,6 @@ Example of usage can be found [here](examples/release-please.yaml).
 
 Creates a Jira release and sets a fixed version for the found issues from github commits
 
-Example of usage can be found [here](examples/jira-release.yaml).
+Example of usage with custom GITHUB Token for Release Please can be found [here](examples/jira-release.yaml).
+
+Example of usage in single file can be found [here](examples/release.yaml).

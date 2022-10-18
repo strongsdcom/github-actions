@@ -3,16 +3,16 @@ name: Jira Release
 on:
   workflow_call:
     inputs:
-      jira-project-key:
+      project-key:
         required: true
         type: string
-      jira-sub-domain:
+      sub-domain:
         required: true
         type: string
     secrets:
-      jira-email:
+      email:
         required: true
-      jira-token:
+      token:
         required: true
 
 jobs:
@@ -31,16 +31,16 @@ jobs:
           tickets=$(git log --pretty=oneline \
             $(git tag --sort=-committerdate -l  "*.*.*" | head -2 | tail -1 | grep . || git rev-list --max-parents=0 HEAD)..\
             $(git tag --sort=-committerdate -l  "*.*.*" | head -1 | grep . || echo HEAD) | \
-            grep -oP "${{ inputs.jira-project-key }}-\d{1,}" | sort | uniq | sed 's/^\|$/"/g' | xargs -r | sed -e 's/ /,/g')
+            grep -oP "${{ inputs.project-key }}-\d{1,}" | sort | uniq | sed 's/^\|$/"/g' | xargs -r | sed -e 's/ /,/g')
           echo "tickets=$tickets" >> $GITHUB_OUTPUT
 
       - uses: StalemateInc/jira-release-action@main
         with:
-          email: ${{ secrets.jira-email }}
-          api_token: ${{ secrets.jira-token }}
+          email: ${{ secrets.email }}
+          api_token: ${{ secrets.token }}
           release_name: ${{ steps.release.outputs.tag_name }}
           tickets: ${{ steps.collect-jira-issues.outputs.tickets }}
-          subdomain: ${{ inputs.jira-sub-domain }}
-          jira_project: ${{ inputs.jira-project-key }}
+          subdomain: ${{ inputs.sub-domain }}
+          jira_project: ${{ inputs.project-key }}
           create: true
           release: false

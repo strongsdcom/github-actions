@@ -18,14 +18,20 @@ on:
       extra-files:
         required: false
         type: string
+    outputs:
+      release-created:
+        description: "Indicates if GitHub release has been created by the action"
+        value: ${{ jobs.release-please.outputs.release-created }}
     secrets:
       github-token:
-        required: true
+        required: false
 
 jobs:
-  jira-release:
+  release-please:
     name: Release
     runs-on: ubuntu-latest
+    outputs:
+      release-created: ${{ steps.release.outputs.release_created }}
     steps:
       - name: Run Release Please Action
         uses: GoogleCloudPlatform/release-please-action@v3
@@ -35,6 +41,7 @@ jobs:
           bump-minor-pre-major: ${{ inputs.bump-minor-pre-major }}
           bump-patch-for-minor-pre-major: ${{ inputs.bump-patch-for-minor-pre-major }}
           extra-files: ${{ inputs.extra-files }}
+          token: ${{ secrets.github-token }}
 
       - name: Checkout
         uses: actions/checkout@v3
