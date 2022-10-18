@@ -41,7 +41,7 @@ jobs:
           bump-minor-pre-major: ${{ inputs.bump-minor-pre-major }}
           bump-patch-for-minor-pre-major: ${{ inputs.bump-patch-for-minor-pre-major }}
           extra-files: ${{ inputs.extra-files }}
-          token: ${{ secrets.github-token || secrets.GITHUB_TOKEN }}
+          token: ${{ (secrets.github-token == "" && secrets.GITHUB_TOKEN) || secrets.github-token }}
 
       - name: Checkout
         uses: actions/checkout@v3
