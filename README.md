@@ -1,4 +1,4 @@
-# reusable-workflow
+# Github Actions
 This repo is for sharing different Github Actions workflows for corporate projects
 
 ## Release Please
