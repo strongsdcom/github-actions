@@ -1,0 +1,20 @@
+name: Jira Release
+
+on:
+  release:
+    types:
+      - published
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  jira-release:
+    uses: bit4coinBV/github-actions/.github/workflows/jira-release.yaml@main
+    secrets:
+      jira-email: ${{ secrets.JIRA_EMAIL }}
+      jira-token: ${{ secrets.JIRA_TOKEN }}
+    with:
+      jira-project-key: 'SRE'
+      jira-sub-domain: 'hyphe'

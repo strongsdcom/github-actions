@@ -1,0 +1,21 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-please:
+    uses: bit4coinBV/github-actions/.github/workflows/release-please.yaml@main
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      release-type: elixir
+      extra-files: |
+        .deploy/Chart.yaml
+        apps/b4c_trade/mix.exs
