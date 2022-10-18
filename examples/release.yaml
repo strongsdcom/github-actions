@@ -14,7 +14,7 @@ jobs:
     uses: bit4coinBV/github-actions/.github/workflows/release-please.yaml@main
   jira-release:
     needs: release-please
-    if: ${{ needs.release-please.outputs.release-created }
+    if: ${{ needs.release-please.outputs.release-created }}
     uses: bit4coinBV/github-actions/.github/workflows/jira-release.yaml@main
     secrets:
       email: ${{ secrets.JIRA_EMAIL }}
