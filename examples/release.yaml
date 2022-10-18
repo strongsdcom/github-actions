@@ -21,4 +21,5 @@ jobs:
       token: ${{ secrets.JIRA_TOKEN }}
     with:
       project-key: 'SRE'
-      sub-domain: 'hyphe'  
+      sub-domain: 'hyphe'
+      release-name: ${{ needs.release-please.outputs.tag-name }}

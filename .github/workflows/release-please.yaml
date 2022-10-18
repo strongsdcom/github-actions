@@ -22,6 +22,9 @@ on:
       release-created:
         description: "Indicates if GitHub release has been created by the action"
         value: ${{ jobs.release-please.outputs.release-created }}
+      tag-name:
+        description: "Release tag name"
+        value: ${{ jobs.release-please.outputs.tag-name}}
     secrets:
       github-token:
         required: false
@@ -32,6 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release-created: ${{ steps.release.outputs.release_created }}
+      tag-name: ${{ steps.release.outputs.tag_name }}
     steps:
       - name: Run Release Please Action
         uses: GoogleCloudPlatform/release-please-action@v3
