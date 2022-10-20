@@ -32,13 +32,12 @@ on:
         default: ''
 
     outputs:
-      release-created:
-        description: "Indicates if GitHub release has been created by the action"
-        value: ${{ jobs.release-please.outputs.release-created }}
       image-tag:
         description: "Docker Image tag name"
-        value: ${{ inputs.tags[0] }}
-      image-repository: ${{ env.REGISTRY }}
+        value: ${{ jobs.docker-build.outputs.image-tag }}
+      image-repository:
+        description: "Docker Image Repository"
+        value: ${{ jobs.docker-build.outputs.image-repository }}
 
 env:
   REGISTRY: ${{ secrets.aws-account }}.dkr.ecr.${{ inputs.aws-region }}.amazonaws.com
@@ -46,6 +45,9 @@ env:
 jobs:
   docker-build:
     runs-on: ubuntu-latest
+    outputs:
+      image-repository: ${{ env.REGISTRY }}
+      image-tag: ${{ steps.build-tags.outputs.tags }}
     environment:
       name: ${{ inputs.env-name }}
       url: ${{ inputs.env-url }}
