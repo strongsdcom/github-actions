@@ -5,8 +5,6 @@ on:
         required: true
       aws-secret-access-key:
         required: true
-      aws-account:
-        required: true
       build-args:
         required: false
 
@@ -15,6 +13,9 @@ on:
         required: false
         type: string
         default: ''
+      aws-account:
+        required: true
+        type: string
       aws-region: 
         required: false
         type: string
