@@ -44,7 +44,7 @@ on:
         value: ${{ jobs.docker-build.outputs.short-sha }}
 
 env:
-  REGISTRY: ${{ secrets.aws-account }}.dkr.ecr.${{ inputs.aws-region }}.amazonaws.com
+  REGISTRY: ${{ inputs.aws-account }}.dkr.ecr.${{ inputs.aws-region }}.amazonaws.com
 
 jobs:
   docker-build:
