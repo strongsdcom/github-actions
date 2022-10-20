@@ -66,6 +66,8 @@ jobs:
     environment:
       name: ${{ inputs.env-name }}
       url: ${{ inputs.env-url }}
+    env:
+      GPG_KEY_PRESENT: ${{ secrets.gpg-private-key != '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -77,7 +79,7 @@ jobs:
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v5
-        if: ${{ secrets.gpg-private-key != '' }}
+        if: ${{ env.GPG_KEY_PRESENT }}
         with:
           gpg_private_key: ${{ secrets.gpg-private-key }}
           passphrase: ${{ secrets.gpg-passphrase }}
@@ -86,6 +88,7 @@ jobs:
         uses: azure/setup-helm@v3.3
 
       - name: Install Helm Secrets
+        if: ${{ env.GPG_KEY_PRESENT }}
         run: helm plugin install https://github.com/jkroepke/helm-secrets        
 
       - name: AWS Credentials
@@ -119,7 +122,8 @@ jobs:
 
       - name: Helm Upgrade
         run: |
-          helm upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
+          helm_command=$(echo '{{ env.GPG_KEY_PRESENT }}' | sed 's/yes/helm secrets/g' |  sed 's/no/helm/g')
+          $helm_command upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
             --namespace ${{ inputs.namespace }} \
             ${{ steps.build-helm-values.outputs.helm-values }} \
             --set image.tag=${{ inputs.image-tag }} \
