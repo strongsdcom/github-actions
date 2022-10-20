@@ -78,7 +78,7 @@ jobs:
           tags=$(echo ${ origin_tags:-${{ steps.build-short-sha.outputs.short-sha }} } | sed 's#.*#${{ env.REGISTRY }}/${{ inputs.ecr-name }}:&#')
           echo "tags=$tags" >> $GITHUB_OUTPUT
       - name: Build Docker Args
-        id: build-args
+        id: build-docker-build-args
         run: |
           docker_build_args=$(echo '${{ secrets.build-args }}' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/g')
           echo "build-args=$docker_build_args" >> $GITHUB_OUTPUT
@@ -86,7 +86,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          build-args: ${{  }}
+          build-args: ${{ steps.build-docker-build-args.outputs.build-args }}
           push: true
           tags: ${{ steps.build-tags.outputs.tags }}
           cache-from: type=gha
