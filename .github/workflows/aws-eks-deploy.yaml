@@ -107,14 +107,14 @@ jobs:
       - name: Build Helm Values
         id: build-helm-values
         run: |
-          helm-values=$(echo '${{ inputs.helm-values }}' | sed 's/.*/-f &/' | sed '$!N;s/\n/ /')
-          echo "helm-values=$helm-values" >> $GITHUB_OUTPUT
+          helm_values='$(echo '${{ inputs.helm-values }}' | sed 's/.*/-f &/' | sed '$!N;s/\n/ /')'
+          echo "helm-values=$helm_values" >> $GITHUB_OUTPUT
 
       - name: Build Helm Set Values
         id: build-helm-set-values
         run: |
-          helm-set-values=$(echo '${{ inputs.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
-          echo "helm-set-values=$helm-set-values" >> $GITHUB_OUTPUT
+          helm_set_values=$(echo '${{ inputs.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
+          echo "helm-set-values=$helm_set_values" >> $GITHUB_OUTPUT
 
       - name: Build DeployedAt
         id: build-deployed-at
