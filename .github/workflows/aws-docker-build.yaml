@@ -67,7 +67,7 @@ jobs:
         shell: bash
         run: |
           origin_tags=${{ inputs.tags }} 
-          tags = $(${origin_tags:-$(git rev-parse --short HEAD)} | sed 's/.*/${{ env.REGISTRY }}/${{ inputs.ecr-name }}:&/')
+          tags=$(${origin_tags:-$(git rev-parse --short HEAD)} | sed 's#.*#${{ env.REGISTRY }}/${{ inputs.ecr-name }}:&#')
           echo "tags=$tags" >> $GITHUB_OUTPUT
       - name: Build and push docker image
         uses: docker/build-push-action@v2
