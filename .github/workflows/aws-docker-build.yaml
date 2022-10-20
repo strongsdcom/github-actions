@@ -24,6 +24,14 @@ on:
       ecr-name:
         required: true
         type: string
+      env-name:
+        required: false
+        type: string
+        default: ''
+      env-url:
+        required: false
+        type: string
+        default: ''
 
     outputs:
       release-created:
@@ -40,6 +48,9 @@ env:
 jobs:
   docker-build:
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.env-name }}
+      url: ${{ inputs.env-url }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2

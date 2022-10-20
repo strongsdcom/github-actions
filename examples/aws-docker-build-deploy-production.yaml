@@ -33,7 +33,6 @@ jobs:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       aws-account: ${{ secrets.AWS_ACCOUNT }}
-      github-token: ${{ secrets.READ_GITHUB_PKG_TOKEN }}
     with:
       build-args: |
         SENTRY_ENVIRONMENT=${{ env.RELEASE_ENV }}

@@ -43,6 +43,14 @@ on:
       image-repository:
         required: true
         type: string
+      env-name:
+        required: false
+        type: string
+        default: ''
+      env-url:
+        required: false
+        type: string
+        default: ''
 
     outputs:
       release-name: ${{ inputs.release-name }}
@@ -51,6 +59,9 @@ jobs:
   eks-deploy:
     name: EKS Deploy
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.env-name }}
+      url: ${{ inputs.env-url }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
