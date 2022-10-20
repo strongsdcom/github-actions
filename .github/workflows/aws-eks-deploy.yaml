@@ -53,12 +53,14 @@ on:
         default: ''
 
     outputs:
-      release-name: ${{ inputs.release-name }}
+      release-name: ${{ jobs.eks-deploy.outputs.release-name }}
 
 jobs:
   eks-deploy:
     name: EKS Deploy
     runs-on: ubuntu-latest
+    outputs:
+      release-name: ${{ inputs.release-name }}
     environment:
       name: ${{ inputs.env-name }}
       url: ${{ inputs.env-url }}
