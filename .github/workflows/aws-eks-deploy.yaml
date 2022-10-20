@@ -59,7 +59,6 @@ on:
 
 jobs:
   eks-deploy:
-    name: EKS Deploy
     runs-on: ubuntu-latest
     outputs:
       release-name: ${{ inputs.release-name }}
@@ -122,7 +121,7 @@ jobs:
 
       - name: Helm Upgrade
         run: |
-          helm_command=$(echo '{{ env.GPG_KEY_PRESENT }}' | sed 's/yes/helm secrets/g' |  sed 's/no/helm/g')
+          helm_command=$(echo '{{ env.GPG_KEY_PRESENT }}' | sed 's/true/helm secrets/g' |  sed 's/false/helm/g')
           $helm_command upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
             --namespace ${{ inputs.namespace }} \
             ${{ steps.build-helm-values.outputs.helm-values }} \
