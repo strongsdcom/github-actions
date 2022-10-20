@@ -11,11 +11,11 @@ concurrency:
 
 jobs:
   release-please:
-    uses: bit4coinBV/github-actions/.github/workflows/release-please.yaml@main
+    uses: strongsdcom/github-actions/.github/workflows/release-please.yaml@main
   jira-release:
     needs: release-please
     if: ${{ needs.release-please.outputs.release-created }}
-    uses: bit4coinBV/github-actions/.github/workflows/jira-release.yaml@main
+    uses: strongsdcom/github-actions/.github/workflows/jira-release.yaml@main
     secrets:
       email: ${{ secrets.JIRA_EMAIL }}
       token: ${{ secrets.JIRA_TOKEN }}

@@ -68,7 +68,7 @@ jobs:
   
   sentry-release:
     runs-on: ubuntu-latest
-    uses: bit4coinBV/github-actions/.github/workflows/sentry-release.yaml@main
+    uses: strongsdcom/github-actions/.github/workflows/sentry-release.yaml@main
     needs: deploy-production
     with:
       release-name: ${{ needs.deploy-production.outputs.release-name }}
