@@ -53,7 +53,9 @@ on:
         default: ''
 
     outputs:
-      release-name: ${{ jobs.eks-deploy.outputs.release-name }}
+      release-name:
+        description: "Release Name"
+        value: ${{ jobs.eks-deploy.outputs.release-name }}
 
 jobs:
   eks-deploy:
