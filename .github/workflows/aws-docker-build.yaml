@@ -74,8 +74,7 @@ jobs:
         id: build-tags
         shell: bash
         run: |
-          origin_tags=${{ inputs.tags }}
-          tags=$(echo ${ origin_tags:-${{ steps.build-short-sha.outputs.short-sha }} } | sed 's#.*#${{ env.REGISTRY }}/${{ inputs.ecr-name }}:&#')
+          tags=$(echo '${{ inputs.tags }}'| sed '/^$/d' | sed 's/^$/${{ steps.build-short-sha.outputs.short-sha }}/' | sed 's#.*#${{ env.REGISTRY }}/${{ inputs.ecr-name }}:&#')
           echo "tags=$tags" >> $GITHUB_OUTPUT
       - name: Build Docker Args
         id: build-docker-build-args
