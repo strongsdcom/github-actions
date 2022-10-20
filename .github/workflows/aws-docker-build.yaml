@@ -39,6 +39,9 @@ on:
       image-repository:
         description: "Docker Image Repository"
         value: ${{ jobs.docker-build.outputs.image-repository }}
+      short-sha:
+        description: "Git commit short sha"
+        value: ${{ jobs.docker-build.outputs.short-sha }}
 
 env:
   REGISTRY: ${{ secrets.aws-account }}.dkr.ecr.${{ inputs.aws-region }}.amazonaws.com
@@ -49,12 +52,16 @@ jobs:
     outputs:
       image-repository: ${{ env.REGISTRY }}
       image-tag: ${{ steps.build-tags.outputs.tags }}
+      short-sha: ${{ steps.build-short-sha.outputs.short-sha }}
     environment:
       name: ${{ inputs.env-name }}
       url: ${{ inputs.env-url }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Build git commit short sha
+        id: build-short-sha
+        run: echo "short-sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Login to ECR
@@ -67,14 +74,19 @@ jobs:
         id: build-tags
         shell: bash
         run: |
-          origin_tags=${{ inputs.tags }} 
-          tags=$(echo ${origin_tags:-$(git rev-parse --short HEAD)} | sed 's#.*#${{ env.REGISTRY }}/${{ inputs.ecr-name }}:&#')
+          origin_tags=${{ inputs.tags }}
+          tags=$(echo ${ origin_tags:-${{ steps.build-short-sha.outputs.short-sha }} } | sed 's#.*#${{ env.REGISTRY }}/${{ inputs.ecr-name }}:&#')
           echo "tags=$tags" >> $GITHUB_OUTPUT
+      - name: Build Docker Args
+        id: build-args
+        run: |
+          docker_build_args=$(echo '${{ secrets.build-args }}' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/g')
+          echo "build-args=$docker_build_args" >> $GITHUB_OUTPUT
       - name: Build and push docker image
         uses: docker/build-push-action@v2
         with:
           context: .
-          build-args: ${{ secrets.build-args }}
+          build-args: ${{  }}
           push: true
           tags: ${{ steps.build-tags.outputs.tags }}
           cache-from: type=gha

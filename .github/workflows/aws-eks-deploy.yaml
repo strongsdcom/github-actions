@@ -104,7 +104,7 @@ jobs:
       - name: Build Helm Values
         id: build-helm-values
         run: |
-          helm_values=$(echo '${{ inputs.helm-values }}' | sed '/./!d' |  sed 's/.*/-f &/' | sed '$!N;s/\n/ /')
+          helm_values=$(echo '${{ inputs.helm-values }}' | sed '/^$/d' |  sed 's/.*/-f &/' | sed '$!N;s/\n/ /')
           echo "helm-values=$helm_values" >> $GITHUB_OUTPUT
 
       - name: Build Helm Set Values
