@@ -12,7 +12,7 @@ on:
       tags:
         required: false
         type: string
-        default: ''
+        default: '<<short-sha>>'
       aws-account:
         required: true
         type: string
@@ -73,8 +73,8 @@ jobs:
       - name: Build Tags
         id: build-tags
         shell: bash
-        run: |
-          tags=$(echo '${{ inputs.tags }}'| sed '/^$/d' | sed 's/^$/${{ steps.build-short-sha.outputs.short-sha }}/' | sed 's#.*#${{ env.REGISTRY }}/${{ inputs.ecr-name }}:&#')
+        run: |       
+          tags=$(echo '${{ inputs.tags }}' | awk '{$1=$1};1' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/' | sed 's#.*#${{ env.REGISTRY }}/${{ inputs.ecr-name }}:&#')
           echo "tags=$tags" >> $GITHUB_OUTPUT
       - name: Build Docker Args
         id: build-docker-build-args
