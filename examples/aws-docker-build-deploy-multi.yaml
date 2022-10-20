@@ -1,0 +1,71 @@
+name: Build and Deploy Multi
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: 'Build environment'
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - dev
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.env }}
+  cancel-in-progress: true
+
+env:
+  STAGING_URL: https://app-staging.example.com
+  DEV_URL: https://app-dev.example.com
+
+jobs:
+  docker-build-multi:
+    uses: strongsdcom/github-actions/.github/workflows/aws-docker-build.yaml@main
+    secrets:
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws-account: ${{ secrets.AWS_ACCOUNT }}
+      github-token: ${{ secrets.READ_GITHUB_PKG_TOKEN }}
+    with:
+      build-args: |
+        SENTRY_ENVIRONMENT=${{ inputs.env }}
+        SENTRY_DSN=https://d55c6efeb9b841e791ac5dfebe96e396@o415134.ingest.sentry.io/6133152
+      ecr-name: strongsdcom/app-${{ inputs.env }}
+  
+  deploy-multi:
+    uses: strongsdcom/github-actions/.github/workflows/aws-eks-deploy.yaml@main
+    needs: docker-build-multi
+    environment:
+      name: ${{ inputs.env }}
+      url: ${{ (inputs.env == 'staging' && env.STAGING_URL) || (inputs.env == 'dev' && env.DEV_URL) }}
+    secrets:
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws-account: ${{ secrets.AWS_ACCOUNT }}
+      gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+    with:
+      release-name: ${{ inputs.env }}-app
+      helm-set-values: |
+        a=1
+        b=2
+      helm-values: |
+        ./.deploy/values/${{ inputs.env }}/config.yaml
+        ./.deploy/values/${{ inputs.env }}/secrets.yaml
+      namespace: ${{ inputs.env }}
+      cluster-name: example-cluster
+      image-tag: ${{ needs.docker-build-multi.outputs.image-tag }}
+      image-repository: ${{ needs.docker-build-multi.outputs.image-repository }}
+
+  sentry-release:
+    runs-on: ubuntu-latest
+    uses: bit4coinBV/github-actions/.github/workflows/sentry-release.yaml@main
+    needs: deploy-multi
+    with:
+      release-name: ${{ needs.deploy-multi.outputs.release-name }}
+      release-env: ${{ inputs.env }}
+      organization: ${{ env.SENTRY_ORG }}
+      project: ${{ env.SENTRY_PROJECT }}
+    secrets:
+      auth-token: ${{ secrets.SENTRY_AUTH_TOKEN }}

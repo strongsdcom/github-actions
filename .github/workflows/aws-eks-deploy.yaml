@@ -1,0 +1,114 @@
+on:
+  workflow_call:
+    secrets:
+      aws-access-key-id: 
+        required: true
+      aws-secret-access-key:
+        required: true
+      aws-account:
+        required: true
+      gpg-private-key:
+        required: false
+      gpg-passphrase:
+        required: false
+
+    inputs:
+      aws-region: 
+        required: false
+        type: string
+        default: 'eu-north-1'
+      release-name:
+        required: true
+        type: string
+      helm-set-values:
+        required: false
+        type: string
+        default: ''
+      helm-values:
+        required: true
+        type: string
+      namespace:
+        required: true
+        type: string
+      sops-version:
+        required: false
+        type: string
+        default: '3.6.1'
+      cluster-name:
+        required: true
+        type: string
+      image-tag:
+        required: true
+        type: string
+      image-repository:
+        required: true
+        type: string
+
+    outputs:
+      release-name: ${{ inputs.release-name }}
+
+jobs:
+  eks-deploy:
+    name: EKS Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Sops Binary Installer
+        uses: mdgreenwald/mozilla-sops-action@v1
+        with:
+          version: ${{ inputs.sops-version }}
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v5
+        if: ${{ secrets.gpg-private-key != '' }}
+        with:
+          gpg_private_key: ${{ secrets.gpg-private-key }}
+          passphrase: ${{ secrets.gpg-passphrase }}
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3.3
+
+      - name: Install Helm Secrets
+        run: helm plugin install https://github.com/jkroepke/helm-secrets        
+
+      - name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.aws-access-key-id }}
+          aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Configure EKS
+        run: aws eks update-kubeconfig --name ${{ inputs.cluster-name }} --region ${{ inputs.aws-region }}
+
+      - name: Secure kubeconfig permissions
+        run: sudo chown $USER $HOME/.kube/config && chmod 600 $HOME/.kube/config
+
+      - name: Build Helm Values
+        id: build-helm-values
+        run: |
+          helm-values = $(${{ inputs.helm-values }} | sed 's/.*/-f &/' | sed '$!N;s/\n/ /')
+          echo "helm-values=$helm-values" >> $GITHUB_OUTPUT
+
+      - name: Build Helm Set Values
+        id: build-helm-set-values
+        run: |
+          helm-set-values = $(${{ inputs.helm-set-values }} | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
+          echo "helm-set-values=$helm-set-values" >> $GITHUB_OUTPUT
+
+      - name: Build DeployedAt
+        id: build-deployed-at
+        run: echo "deployed-at=$(date +"%Y-%m-%d %T %Z")" >> $GITHUB_OUTPUT
+
+      - name: Helm Upgrade
+        run: |
+          helm upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
+            --namespace ${{ inputs.namespace }} \
+            ${{ steps.build-helm-values.outputs.helm-values }} \
+            --set image.tag=${{ inputs.image-tag }} \
+            --set image.repository=${{ inputs.image-repository }} \
+            --set deployedBy='ci/cd by ${{ github.actor }}' \
+            --set deployedAt=${{ steps.build-deployed-at.outputs.deployed-at }} \
+            ${{ steps.build-helm-set-values.outputs.helm-set-values }}

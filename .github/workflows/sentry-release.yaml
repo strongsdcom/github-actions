@@ -1,0 +1,35 @@
+name: Sentry Release
+
+on:
+  workflow_call:
+    inputs:
+      release-name:
+        required: true
+        type: string
+      release-env:
+        required: true
+        type: string        
+      organization:
+        required: true
+        type: string
+      project:
+        required: true
+        type: string  
+    secrets:
+      auth-token:
+        required: true
+
+jobs:
+  sentry-release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Sentry release
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.auth-token }}
+          SENTRY_ORG: ${{ inputs.organization }}
+          SENTRY_PROJECT: ${{ inputs.project }}
+        with:
+          environment: ${{ inputs.release-env }}
+          version: ${{ inputs.release-name }}
