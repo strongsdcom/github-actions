@@ -126,5 +126,5 @@ jobs:
             --set image.tag=${{ inputs.image-tag }} \
             --set image.repository=${{ inputs.image-repository }} \
             --set deployedBy='ci/cd by ${{ github.actor }}' \
-            --set deployedAt=${{ steps.build-deployed-at.outputs.deployed-at }} \
+            --set deployedAt='${{ steps.build-deployed-at.outputs.deployed-at }}' \
             ${{ steps.build-helm-set-values.outputs.helm-set-values }}
