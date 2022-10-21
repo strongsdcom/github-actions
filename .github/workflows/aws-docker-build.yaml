@@ -16,6 +16,9 @@ on:
       registry:
         required: true
         type: string
+      repository:
+        required: true
+        type: string
       env-name:
         required: false
         type: string
