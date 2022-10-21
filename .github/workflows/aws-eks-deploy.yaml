@@ -44,11 +44,11 @@ on:
       image-repository:
         required: true
         type: string
-      env-name:
+      environment-name:
         required: false
         type: string
         default: ''
-      env-url:
+      environment-url:
         required: false
         type: string
         default: ''
@@ -65,8 +65,8 @@ jobs:
     outputs:
       image-tag: ${{ inputs.image-tag }}
     environment:
-      name: ${{ inputs.env-name }}
-      url: ${{ inputs.env-url }}
+      name: ${{ inputs.environment-name }}
+      url: ${{ inputs.environment-url }}
     env:
       GPG_KEY_PRESENT: ${{ secrets.gpg-private-key != '' }}
     steps:

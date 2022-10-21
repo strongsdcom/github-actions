@@ -19,11 +19,7 @@ on:
       repository:
         required: true
         type: string
-      env-name:
-        required: false
-        type: string
-        default: ''
-      env-url:
+      environment-name:
         required: false
         type: string
         default: ''
@@ -52,8 +48,7 @@ jobs:
       image-tag: ${{ steps.get-first-tag.outputs.image-tag }}
       short-sha: ${{ steps.build-short-sha.outputs.short-sha }}
     environment:
-      name: ${{ inputs.env-name }}
-      url: ${{ inputs.env-url }}
+      name: ${{ inputs.environment-name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
