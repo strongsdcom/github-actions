@@ -43,7 +43,8 @@ on:
         value: ${{ jobs.docker-build.outputs.short-sha }}
 
 jobs:
-  docker:
+  docker-build:
+    name: Docker Build
     runs-on: ubuntu-latest
     outputs:
       registry: ${{ inputs.registry }}

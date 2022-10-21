@@ -20,7 +20,7 @@ on:
 
 jobs:
   release:
-    name: Release
+    name: JIRA Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

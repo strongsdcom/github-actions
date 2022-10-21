@@ -31,7 +31,7 @@ on:
 
 jobs:
   release:
-    name: Release
+    name: GitHub Release
     runs-on: ubuntu-latest
     outputs:
       release-created: ${{ steps.release.outputs.release_created }}
