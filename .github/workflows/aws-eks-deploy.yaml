@@ -62,7 +62,7 @@ jobs:
   eks-deploy:
     runs-on: ubuntu-latest
     outputs:
-      image-tag: ${{ inputs.image_tag }}
+      image-tag: ${{ inputs.image-tag }}
     environment:
       name: ${{ inputs.env-name }}
       url: ${{ inputs.env-url }}
