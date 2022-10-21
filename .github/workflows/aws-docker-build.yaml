@@ -76,6 +76,7 @@ jobs:
           echo "image-tag=$image_tag" >> $GITHUB_OUTPUT
       - name: Build ECR tags
         id: build-ecr-tags
+        run: |
           ecr_tags=$(echo '${{ steps.build-tags.outputs.tags }}' | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#')
           echo "ecr-tags=$ecr_tags" >> $GITHUB_OUTPUT
       - name: Build Docker Args
