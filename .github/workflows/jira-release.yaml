@@ -19,7 +19,7 @@ on:
         required: true
 
 jobs:
-  jira-release:
+  release:
     name: Release
     runs-on: ubuntu-latest
     steps:

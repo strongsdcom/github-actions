@@ -59,7 +59,7 @@ on:
         value: ${{ jobs.eks-deploy.outputs.image-tag }}
 
 jobs:
-  eks-deploy:
+  deploy:
     runs-on: ubuntu-latest
     outputs:
       image-tag: ${{ inputs.image-tag }}

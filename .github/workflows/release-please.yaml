@@ -30,7 +30,7 @@ on:
         required: false
 
 jobs:
-  release-please:
+  release:
     name: Release
     runs-on: ubuntu-latest
     outputs:

@@ -20,7 +20,7 @@ on:
         required: true
 
 jobs:
-  sentry-release:
+  release:
     name: Release
     runs-on: ubuntu-latest
     steps:
