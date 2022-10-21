@@ -13,14 +13,7 @@ on:
         required: false
         type: string
         default: '<<short-sha>>'
-      aws-account:
-        required: true
-        type: string
-      aws-region: 
-        required: false
-        type: string
-        default: 'eu-north-1'
-      ecr-name:
+      registry:
         required: true
         type: string
       env-name:
@@ -34,24 +27,25 @@ on:
 
     outputs:
       image-tag:
-        description: "Docker Image tag name"
+        description: "Main Docker Image tag name"
         value: ${{ jobs.docker-build.outputs.image-tag }}
-      image-repository:
+      registry:
+        description: "Container Registry (ECR)"
+        value: ${{ jobs.docker-build.outputs.registry }}
+      repository:
         description: "Docker Image Repository"
-        value: ${{ jobs.docker-build.outputs.image-repository }}
+        value: ${{ jobs.docker-build.outputs.repository }}
       short-sha:
         description: "Git commit short sha"
         value: ${{ jobs.docker-build.outputs.short-sha }}
-
-env:
-  REGISTRY: ${{ inputs.aws-account }}.dkr.ecr.${{ inputs.aws-region }}.amazonaws.com
 
 jobs:
   docker-build:
     runs-on: ubuntu-latest
     outputs:
-      image-repository: ${{ env.REGISTRY }}
-      image-tag: ${{ steps.build-tags.outputs.tags }}
+      registry: ${{ inputs.registry }}
+      repository: ${{ inputs.repository }}
+      image-tag: ${{ steps.build-tags.outputs.image-tag }}
       short-sha: ${{ steps.build-short-sha.outputs.short-sha }}
     environment:
       name: ${{ inputs.env-name }}
@@ -67,15 +61,23 @@ jobs:
       - name: Login to ECR
         uses: docker/login-action@v1
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ${{ inputs.registry }}
           username: ${{ secrets.aws-access-key-id }}
           password: ${{ secrets.aws-secret-access-key }}
       - name: Build Tags
         id: build-tags
-        shell: bash
         run: |       
-          tags=$(echo '${{ inputs.tags }}' | awk '{$1=$1};1' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/' | sed 's#.*#${{ env.REGISTRY }}/${{ inputs.ecr-name }}:&#')
+          tags=$(echo '${{ inputs.tags }}' | awk '{$1=$1};1' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/' 
           echo "tags=$tags" >> $GITHUB_OUTPUT
+      - name: Get first tag
+        id: get-first-tag
+        run: |
+          image_tag=$(echo '${{ steps.build-tags.outputs.tags }}' | head -1)
+          echo "image-tag=$image_tag" >> $GITHUB_OUTPUT
+      - name: Build ECR tags
+        id: build-ecr-tags
+          ecr_tags=$(echo '${{ steps.build-tags.outputs.tags }}' | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#')
+          echo "ecr-tags=$ecr_tags" >> $GITHUB_OUTPUT
       - name: Build Docker Args
         id: build-docker-build-args
         run: |
@@ -87,6 +89,6 @@ jobs:
           context: .
           build-args: ${{ steps.build-docker-build-args.outputs.build-args }}
           push: true
-          tags: ${{ steps.build-tags.outputs.tags }}
+          tags: ${{ steps.build-ecr-tags.outputs.ecr-tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

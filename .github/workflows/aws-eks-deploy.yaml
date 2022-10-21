@@ -38,6 +38,9 @@ on:
       image-tag:
         required: true
         type: string
+      image-registry:
+        required: true
+        type: string  
       image-repository:
         required: true
         type: string
@@ -51,15 +54,15 @@ on:
         default: ''
 
     outputs:
-      release-name:
-        description: "Release Name"
-        value: ${{ jobs.eks-deploy.outputs.release-name }}
+      image-tag:
+        description: "Docker image tag name"
+        value: ${{ jobs.eks-deploy.outputs.image-tag }}
 
 jobs:
   eks-deploy:
     runs-on: ubuntu-latest
     outputs:
-      release-name: ${{ inputs.release-name }}
+      image-tag: ${{ inputs.image_tag }}
     environment:
       name: ${{ inputs.env-name }}
       url: ${{ inputs.env-url }}
@@ -124,7 +127,7 @@ jobs:
             --namespace ${{ inputs.namespace }} \
             ${{ steps.build-helm-values.outputs.helm-values }} \
             --set image.tag=${{ inputs.image-tag }} \
-            --set image.repository=${{ inputs.image-repository }} \
+            --set image.repository=${{ inputs.image-registry }}/${{ inputs.image-repository }} \
             --set deployedBy='ci/cd by ${{ github.actor }}' \
             --set deployedAt='${{ steps.build-deployed-at.outputs.deployed-at }}' \
             ${{ steps.build-helm-set-values.outputs.helm-set-values }}
