@@ -119,8 +119,8 @@ jobs:
 
       - name: Helm Upgrade
         run: |
-          helm_command=$(echo $GPG_KEY_PRESENT | sed 's/true/helm secrets/g' |  sed 's/false/helm/g')
-          $helm_command upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
+          wrapper_arg=$(echo $GPG_KEY_PRESENT | sed 's/true/secrets/' |  sed 's/false//')
+          helm $wrapper_arg upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
             --namespace ${{ inputs.namespace }} \
             ${{ steps.build-helm-values.outputs.helm-values }} \
             --set image.tag=${{ inputs.image-tag }} \
