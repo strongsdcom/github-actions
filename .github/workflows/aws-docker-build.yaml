@@ -66,7 +66,7 @@ jobs:
       - name: Build Tags
         id: build-tags
         run: |
-          tags=$(echo '${{ inputs.tags }}' | awk '{$1=$1};1' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/' | sed '$!N;s/\n/,/)
+          tags=$(echo '${{ inputs.tags }}' | awk '{$1=$1};1' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/' | sed '$!N;s/\n/,/')
           image_tag=$(echo $tags | cut -d ',' -f1)
           ecr_tags=$(echo $tags  | sed 's#,#\n#g' | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#' | sed '$!N;s#\n#,#')
           echo "image-tag=$image_tag" >> $GITHUB_OUTPUT
