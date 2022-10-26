@@ -45,7 +45,7 @@ jobs:
     outputs:
       registry: ${{ inputs.registry }}
       repository: ${{ inputs.repository }}
-      image-tag: ${{ steps.get-first-tag.outputs.image-tag }}
+      image-tag: ${{ steps.build-tags.outputs.image-tag }}
       short-sha: ${{ steps.build-short-sha.outputs.short-sha }}
     environment:
       name: ${{ inputs.environment-name }}
@@ -67,18 +67,9 @@ jobs:
         id: build-tags
         run: |       
           tags=$(echo '${{ inputs.tags }}' | awk '{$1=$1};1' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/')
-          echo "tags<<EOF" >> $GITHUB_ENV
-          echo "$tags" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-      - name: Get first tag
-        id: get-first-tag
-        run: |
           image_tag=$(echo $tags | head -1)
-          echo "image-tag=$image_tag" >> $GITHUB_OUTPUT
-      - name: Build ECR tags
-        id: build-ecr-tags
-        run: |
           ecr_tags=$(echo $tags | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#' | sed '$!N;s/\n/,/')
+          echo "image-tag=$image_tag" >> $GITHUB_OUTPUT
           echo "ecr-tags=$ecr_tags" >> $GITHUB_OUTPUT
       - name: Build Docker Args
         id: build-docker-build-args
@@ -91,6 +82,6 @@ jobs:
           context: .
           build-args: ${{ steps.build-docker-build-args.outputs.build-args }}
           push: true
-          tags: ${{ steps.build-ecr-tags.outputs.ecr-tags }}
+          tags: ${{ steps.build-tags.outputs.ecr-tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
