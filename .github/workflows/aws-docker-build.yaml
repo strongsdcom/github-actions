@@ -71,7 +71,11 @@ jobs:
           ecr_tags=$(echo $tags | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#' | sed '$!N;s/\n/,/')
           echo "image-tag=$image_tag" >> $GITHUB_OUTPUT
           echo $tags
+          printf "%q" $tags
+          echo $image_tag
+          printf "%q" $image_tag
           echo $ecr_tags
+          printf "%q" $ecr_tags
           echo "ecr-tags=$ecr_tags" >> $GITHUB_OUTPUT
       - name: Build Docker Args
         id: build-docker-build-args
