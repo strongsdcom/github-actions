@@ -79,8 +79,8 @@ jobs:
         id: build-ecr-tags
         run: |
           ecr_tags=$(echo $tags | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#')
-          echo "ecr-tags<<EOF" >> $GITHUB_ENV
-          echo "$ecr-tags" >> $GITHUB_ENV
+          echo "ecr_tags<<EOF" >> $GITHUB_ENV
+          echo "$ecr_tags" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
       - name: Build Docker Args
         id: build-docker-build-args
@@ -93,6 +93,6 @@ jobs:
           context: .
           build-args: ${{ steps.build-docker-build-args.outputs.build-args }}
           push: true
-          tags: ${{ env.ecr-tags }}
+          tags: ${{ env.ecr_tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
