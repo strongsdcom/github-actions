@@ -65,44 +65,11 @@ jobs:
       #     password: ${{ secrets.aws-secret-access-key }}
       - name: Build Tags
         id: build-tags
-        run: |       
-          tags=$(echo '${{ inputs.tags }}' | awk '{$1=$1};1' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/')
-          image_tag=$(echo $tags | head -1)
-          ecr_tags=$(echo $tags | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#' | sed '$!N;s/\n/,/')
+        run: |
+          tags=$(echo '${{ inputs.tags }}' | awk '{$1=$1};1' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/' | sed '$!N;s/\n/,/)
+          image_tag=$(echo $tags | cut -d ',' -f1)
+          ecr_tags=$(echo $tags  | sed 's#,#\n#g' | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#' | sed '$!N;s#\n#,#')
           echo "image-tag=$image_tag" >> $GITHUB_OUTPUT
-
-          echo "____inputs.tags__START___"
-          echo '${{ inputs.tags }}'
-          echo "____inputs.tags__END___"
-
-          echo "____inputs.tags_inspect__START___"
-          printf "%q" '${{ inputs.tags }}'
-          echo "____inputs.tags_inspect_END___"
-
-          echo "____tags__START___"
-          echo $tags
-          echo "____tags__END___"
-
-          echo "____tags_inspect__START___"
-          printf "%q" $tags
-          echo "____tags_inspect_END___"
-
-          echo "____image_tag__START___"
-          echo $image_tag
-          echo "____image_tag__END___"
-
-          echo "____image_tag_inspect__START___"
-          printf "%q" $image_tag
-          echo "____image_tag_inspect_END___"
-
-          echo "____ecr_tags__START___"
-          echo $ecr_tags
-          echo "____ecr_tags__END___"
-
-          echo "____ecr_tags_inspect__START___"
-          printf "%q" $ecr_tags
-          echo "____ecr_tags_inspect_END___"
-
           echo "ecr-tags=$ecr_tags" >> $GITHUB_OUTPUT
       - name: Build Docker Args
         id: build-docker-build-args
