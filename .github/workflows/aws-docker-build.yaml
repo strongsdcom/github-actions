@@ -73,12 +73,12 @@ jobs:
       - name: Get first tag
         id: get-first-tag
         run: |
-          image_tag=$(echo '${{ env.tags }}' | head -1)
+          image_tag=$(echo '$tags' | head -1)
           echo "image-tag=$image_tag" >> $GITHUB_OUTPUT
       - name: Build ECR tags
         id: build-ecr-tags
         run: |
-          ecr_tags=$(echo '${{ env.tags }}' | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#')
+          ecr_tags=$(echo '$tags' | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#')
           echo "ecr-tags<<EOF" >> $GITHUB_ENV
           echo "$ecr-tags" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
