@@ -17,7 +17,7 @@ on:
         type: string  
       ignore-missing:
         required: false
-        type: string
+        type: boolean
         default: false
     secrets:
       auth-token:
