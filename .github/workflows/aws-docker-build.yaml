@@ -75,6 +75,7 @@ jobs:
         id: build-docker-build-args
         run: |
           docker_build_args=$(echo '${{ secrets.build-args }}' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/g')
+          echo $docker_build_args | sed 's/./& /g' 
           echo "build-args=$docker_build_args" >> $GITHUB_OUTPUT
       - name: Build and push docker image
         uses: docker/build-push-action@v2
