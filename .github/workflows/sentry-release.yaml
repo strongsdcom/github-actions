@@ -15,6 +15,10 @@ on:
       project:
         required: true
         type: string  
+      ignore-missing:
+        required: false
+        type: string
+        default: false
     secrets:
       auth-token:
         required: true
@@ -27,6 +31,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - run: ignore_missing
       - name: Create Sentry release
         uses: getsentry/action-release@v1
         env:
@@ -36,3 +41,4 @@ jobs:
         with:
           environment: ${{ inputs.release-env }}
           version: ${{ inputs.release-name }}
+          ignore_missing: ${{ inputs.ignore-missing }}
