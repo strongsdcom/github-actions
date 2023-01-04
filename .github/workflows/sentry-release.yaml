@@ -22,6 +22,10 @@ on:
     secrets:
       auth-token:
         required: true
+      aws-access-key-id: 
+        required: false
+      aws-secret-access-key:
+        required: false
 
 jobs:
   release:
