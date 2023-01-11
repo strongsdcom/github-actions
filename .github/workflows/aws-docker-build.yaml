@@ -3,14 +3,14 @@ on:
     secrets:
       build-args:
         required: false
-      aws-account:
-        required: true
 
     inputs:
       tags:
         required: false
         type: string
         default: '<<short-sha>>'
+      aws-account:
+        required: true
       aws-region: 
         required: false
         type: string
@@ -62,7 +62,7 @@ jobs:
       - name: AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.aws-account }}:role/gha-ecr
+          role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/gha-ecr
           aws-region: ${{ inputs.aws-region }}
       - name: Login to Amazon ECR
         id: login-ecr

@@ -1,14 +1,14 @@
 on:
   workflow_call:
     secrets:
-      aws-account: 
-        required: true
       gpg-private-key:
         required: false
       gpg-passphrase:
         required: false
 
     inputs:
+      aws-account: 
+        required: true
       aws-region: 
         required: false
         type: string
@@ -93,7 +93,7 @@ jobs:
       - name: AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.aws-account }}:role/gha-eks
+          role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/gha-eks
           aws-region: ${{ inputs.aws-region }}
 
       - name: Configure EKS
