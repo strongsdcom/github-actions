@@ -84,7 +84,7 @@ jobs:
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v5
-        if: ${{ input.has_secrets && env.GPG_KEY_PRESENT == 'true' }}
+        if: ${{ inputs.has_secrets && env.GPG_KEY_PRESENT == 'true' }}
         with:
           gpg_private_key: ${{ secrets.gpg-private-key }}
           passphrase: ${{ secrets.gpg-passphrase }}
@@ -93,7 +93,7 @@ jobs:
         uses: azure/setup-helm@v3.3
 
       - name: Install Helm Secrets
-        if: ${{ input.has_secrets && env.GPG_KEY_PRESENT == 'true' }}
+        if: ${{ inputs.has_secrets && env.GPG_KEY_PRESENT == 'true' }}
         run: helm plugin install https://github.com/jkroepke/helm-secrets        
 
       - name: AWS Credentials
