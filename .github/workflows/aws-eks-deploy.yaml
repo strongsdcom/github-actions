@@ -127,7 +127,7 @@ jobs:
 
       - name: Helm Upgrade
         run: |
-          helm ${{ (input.has_secrets && env.GPG_KEY_PRESENT == 'true') && "secrets" || "" }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
+          helm ${{ (inputs.has_secrets && env.GPG_KEY_PRESENT == 'true') && "secrets" || "" }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
             --namespace ${{ inputs.namespace }} \
             ${{ steps.build-helm-values.outputs.helm-values }} \
             --set image.tag=${{ inputs.image-tag }} \
