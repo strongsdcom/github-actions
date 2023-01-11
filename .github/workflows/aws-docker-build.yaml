@@ -11,6 +11,7 @@ on:
         default: '<<short-sha>>'
       aws-account:
         required: true
+        type: string
       aws-region: 
         required: false
         type: string

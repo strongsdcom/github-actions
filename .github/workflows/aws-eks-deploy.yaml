@@ -9,6 +9,7 @@ on:
     inputs:
       aws-account: 
         required: true
+        type: string
       aws-region: 
         required: false
         type: string
