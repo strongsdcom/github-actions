@@ -29,7 +29,7 @@ on:
         type: string
       has-secrets:
         required: false
-        type: bool
+        type: boolean
         default: true
       sops-version:
         required: false
@@ -78,7 +78,7 @@ jobs:
 
       - name: Sops Binary Installer
         uses: mdgreenwald/mozilla-sops-action@v1
-        if: ${{ input.has_secrets }}
+        if: ${{ inputs.has_secrets }}
         with:
           version: ${{ inputs.sops-version }}
 
