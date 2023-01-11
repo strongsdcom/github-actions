@@ -127,7 +127,6 @@ jobs:
 
       - name: Helm Upgrade
         run: |
-          wrapper_arg=$(echo $GPG_KEY_PRESENT | sed 's/true/secrets/' |  sed 's/false//')
           helm ${{ (input.has_secrets && env.GPG_KEY_PRESENT == 'true') && "secrets" || "" }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
             --namespace ${{ inputs.namespace }} \
             ${{ steps.build-helm-values.outputs.helm-values }} \
