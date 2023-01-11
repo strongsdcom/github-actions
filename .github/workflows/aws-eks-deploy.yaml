@@ -96,6 +96,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/gha-eks
           aws-region: ${{ inputs.aws-region }}
+          mask-aws-account-id: 'no'
 
       - name: Configure EKS
         run: aws eks update-kubeconfig --name ${{ inputs.cluster-name }} --region ${{ inputs.aws-region }}
