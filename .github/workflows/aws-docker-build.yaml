@@ -1,10 +1,6 @@
 on:
   workflow_call:
     secrets:
-      aws-access-key-id: 
-        required: true
-      aws-secret-access-key:
-        required: true
       build-args:
         required: false
 
@@ -13,6 +9,13 @@ on:
         required: false
         type: string
         default: '<<short-sha>>'
+      aws-account:
+        required: true
+        type: string
+      aws-region: 
+        required: false
+        type: string
+        default: 'eu-north-1'
       registry:
         required: true
         type: string
@@ -57,12 +60,15 @@ jobs:
         run: echo "short-sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      - name: Login to ECR
-        uses: docker/login-action@v1
+      - name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          registry: ${{ inputs.registry }}
-          username: ${{ secrets.aws-access-key-id }}
-          password: ${{ secrets.aws-secret-access-key }}
+          role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/gha-ecr
+          aws-region: ${{ inputs.aws-region }}
+          mask-aws-account-id: 'no'
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
       - name: Build Tags
         id: build-tags
         run: |
