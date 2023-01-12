@@ -78,13 +78,13 @@ jobs:
 
       - name: Sops Binary Installer
         uses: mdgreenwald/mozilla-sops-action@v1
-        if: ${{ inputs.has_secrets }}
+        if: ${{ inputs.has-secrets }}
         with:
           version: ${{ inputs.sops-version }}
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v5
-        if: ${{ inputs.has_secrets && env.GPG_KEY_PRESENT == 'true' }}
+        if: ${{ inputs.has-secrets && env.GPG_KEY_PRESENT == 'true' }}
         with:
           gpg_private_key: ${{ secrets.gpg-private-key }}
           passphrase: ${{ secrets.gpg-passphrase }}
@@ -93,7 +93,7 @@ jobs:
         uses: azure/setup-helm@v3.3
 
       - name: Install Helm Secrets
-        if: ${{ inputs.has_secrets }}
+        if: ${{ inputs.has-secrets }}
         run: helm plugin install https://github.com/jkroepke/helm-secrets        
 
       - name: AWS Credentials
@@ -127,7 +127,7 @@ jobs:
 
       - name: Helm Upgrade
         run: |
-          helm ${{ inputs.has_secrets && 'secrets' || '' }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
+          helm ${{ inputs.has-secrets && 'secrets' || '' }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
             --namespace ${{ inputs.namespace }} \
             ${{ steps.build-helm-values.outputs.helm-values }} \
             --set image.tag=${{ inputs.image-tag }} \
