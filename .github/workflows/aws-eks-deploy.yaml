@@ -72,7 +72,6 @@ jobs:
       url: ${{ inputs.environment-url }}
     env:
       GPG_KEY_PRESENT: ${{ secrets.gpg-private-key != '' }}
-      HAS_SECRETS: $${{ inputs.has_secrets != '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -128,8 +127,7 @@ jobs:
 
       - name: Helm Upgrade
         run: |
-          wrapper_arg=$(echo $HAS_SECRETS | sed 's/true/secrets/' | sed 's/false//')
-          helm $wrapper_arg upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
+          helm ${{ inputs.has_secrets && 'secrets' || '' }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
             --namespace ${{ inputs.namespace }} \
             ${{ steps.build-helm-values.outputs.helm-values }} \
             --set image.tag=${{ inputs.image-tag }} \
