@@ -19,8 +19,8 @@ on:
         required: true
 
 jobs:
-  jira-release:
-    name: Release
+  release:
+    name: JIRA Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

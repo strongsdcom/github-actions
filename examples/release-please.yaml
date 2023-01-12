@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   release-please:
-    uses: bit4coinBV/github-actions/.github/workflows/release-please.yaml@main
+    uses: strongsdcom/github-actions/.github/workflows/release-please.yaml@main
     secrets:
       github-token: ${{ secrets.MY_CUSTOM_TOKEN }} # is required only for separate jira release file
     with:

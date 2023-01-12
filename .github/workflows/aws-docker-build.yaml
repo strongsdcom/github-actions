@@ -1,0 +1,94 @@
+on:
+  workflow_call:
+    secrets:
+      build-args:
+        required: false
+
+    inputs:
+      tags:
+        required: false
+        type: string
+        default: '<<short-sha>>'
+      aws-account:
+        required: true
+        type: string
+      aws-region: 
+        required: false
+        type: string
+        default: 'eu-north-1'
+      registry:
+        required: true
+        type: string
+      repository:
+        required: true
+        type: string
+      environment-name:
+        required: false
+        type: string
+        default: ''
+
+    outputs:
+      image-tag:
+        description: "Main Docker Image tag name"
+        value: ${{ jobs.docker-build.outputs.image-tag }}
+      registry:
+        description: "Container Registry (ECR)"
+        value: ${{ jobs.docker-build.outputs.registry }}
+      repository:
+        description: "Docker Image Repository"
+        value: ${{ jobs.docker-build.outputs.repository }}
+      short-sha:
+        description: "Git commit short sha"
+        value: ${{ jobs.docker-build.outputs.short-sha }}
+
+jobs:
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    outputs:
+      registry: ${{ inputs.registry }}
+      repository: ${{ inputs.repository }}
+      image-tag: ${{ steps.build-tags.outputs.image-tag }}
+      short-sha: ${{ steps.build-short-sha.outputs.short-sha }}
+    environment:
+      name: ${{ inputs.environment-name }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build git commit short sha
+        id: build-short-sha
+        run: echo "short-sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/gha-ecr
+          aws-region: ${{ inputs.aws-region }}
+          mask-aws-account-id: 'no'
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Build Tags
+        id: build-tags
+        run: |
+          tags=$(echo '${{ inputs.tags }}' | awk '{$1=$1};1' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/' | sed '$!N;s/\n/,/')
+          image_tag=$(echo $tags | cut -d ',' -f1)
+          ecr_tags=$(echo $tags  | sed 's#,#\n#g' | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#' | sed '$!N;s#\n#,#')
+          echo "image-tag=$image_tag" >> $GITHUB_OUTPUT
+          echo "ecr-tags=$ecr_tags" >> $GITHUB_OUTPUT
+      - name: Build Docker Args
+        id: build-docker-build-args
+        run: |
+          echo 'docker_build_args<<EOF' >> $GITHUB_ENV
+          echo '${{ secrets.build-args }}' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/g' >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+      - name: Build and push docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          build-args: ${{ env.docker_build_args }}
+          push: true
+          tags: ${{ steps.build-tags.outputs.ecr-tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

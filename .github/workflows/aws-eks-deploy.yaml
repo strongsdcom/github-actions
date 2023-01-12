@@ -1,0 +1,137 @@
+on:
+  workflow_call:
+    secrets:
+      gpg-private-key:
+        required: false
+      gpg-passphrase:
+        required: false
+
+    inputs:
+      aws-account: 
+        required: true
+        type: string
+      aws-region: 
+        required: false
+        type: string
+        default: 'eu-north-1'
+      release-name:
+        required: true
+        type: string
+      helm-set-values:
+        required: false
+        type: string
+        default: ''
+      helm-values:
+        required: true
+        type: string
+      namespace:
+        required: true
+        type: string
+      has-secrets:
+        required: false
+        type: boolean
+        default: true
+      sops-version:
+        required: false
+        type: string
+        default: '3.6.1'
+      cluster-name:
+        required: true
+        type: string
+      image-tag:
+        required: true
+        type: string
+      image-registry:
+        required: true
+        type: string  
+      image-repository:
+        required: true
+        type: string
+      environment-name:
+        required: false
+        type: string
+        default: ''
+      environment-url:
+        required: false
+        type: string
+        default: ''
+
+    outputs:
+      image-tag:
+        description: "Docker image tag name"
+        value: ${{ jobs.eks-deploy.outputs.image-tag }}
+
+jobs:
+  eks-deploy:
+    name: EKS Deploy
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ inputs.image-tag }}
+    environment:
+      name: ${{ inputs.environment-name }}
+      url: ${{ inputs.environment-url }}
+    env:
+      GPG_KEY_PRESENT: ${{ secrets.gpg-private-key != '' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Sops Binary Installer
+        uses: mdgreenwald/mozilla-sops-action@v1
+        if: ${{ inputs.has-secrets }}
+        with:
+          version: ${{ inputs.sops-version }}
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v5
+        if: ${{ inputs.has-secrets && env.GPG_KEY_PRESENT == 'true' }}
+        with:
+          gpg_private_key: ${{ secrets.gpg-private-key }}
+          passphrase: ${{ secrets.gpg-passphrase }}
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3.3
+
+      - name: Install Helm Secrets
+        if: ${{ inputs.has-secrets }}
+        run: helm plugin install https://github.com/jkroepke/helm-secrets        
+
+      - name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/gha-eks
+          aws-region: ${{ inputs.aws-region }}
+          mask-aws-account-id: 'no'
+
+      - name: Configure EKS
+        run: aws eks update-kubeconfig --name ${{ inputs.cluster-name }} --region ${{ inputs.aws-region }}
+
+      - name: Secure kubeconfig permissions
+        run: sudo chown $USER $HOME/.kube/config && chmod 600 $HOME/.kube/config
+
+      - name: Build Helm Values
+        id: build-helm-values
+        run: |
+          helm_values=$(echo '${{ inputs.helm-values }}' | sed '/^$/d' |  sed 's/.*/-f &/' | sed '$!N;s/\n/ /')
+          echo "helm-values=$helm_values" >> $GITHUB_OUTPUT
+
+      - name: Build Helm Set Values
+        id: build-helm-set-values
+        run: |
+          helm_set_values=$(echo '${{ inputs.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
+          echo "helm-set-values=$helm_set_values" >> $GITHUB_OUTPUT
+
+      - name: Build DeployedAt
+        id: build-deployed-at
+        run: echo "deployed-at=$(date +"%Y-%m-%d %T %Z")" >> $GITHUB_OUTPUT
+
+      - name: Helm Upgrade
+        run: |
+          helm ${{ inputs.has-secrets && 'secrets' || '' }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
+            --namespace ${{ inputs.namespace }} \
+            ${{ steps.build-helm-values.outputs.helm-values }} \
+            --set image.tag=${{ inputs.image-tag }} \
+            --set image.repository=${{ inputs.image-registry }}/${{ inputs.image-repository }} \
+            --set deployedBy='ci/cd by ${{ github.actor }}' \
+            --set deployedAt='${{ steps.build-deployed-at.outputs.deployed-at }}' \
+            ${{ steps.build-helm-set-values.outputs.helm-set-values }}
