@@ -28,7 +28,7 @@ on:
         required: true
         type: string
       has-secrets:
-        required: false
+        required: true
         type: boolean
         default: true
       sops-version:
@@ -93,7 +93,7 @@ jobs:
         uses: azure/setup-helm@v3.3
 
       - name: Install Helm Secrets
-        if: ${{ inputs.has_secrets && env.GPG_KEY_PRESENT == 'true' }}
+        if: ${{ inputs.has_secrets }}
         run: helm plugin install https://github.com/jkroepke/helm-secrets        
 
       - name: AWS Credentials
@@ -127,7 +127,7 @@ jobs:
 
       - name: Helm Upgrade
         run: |
-          helm ${{ (inputs.has_secrets && env.GPG_KEY_PRESENT == 'true') && 'secrets' || '' }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
+          helm ${{ inputs.has_secrets && 'secrets' || '' }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
             --namespace ${{ inputs.namespace }} \
             ${{ steps.build-helm-values.outputs.helm-values }} \
             --set image.tag=${{ inputs.image-tag }} \
