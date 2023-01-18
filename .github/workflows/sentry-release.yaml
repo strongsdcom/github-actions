@@ -3,22 +3,34 @@ name: Sentry Release
 on:
   workflow_call:
     inputs:
-      release-name:
-        required: true
-        type: string
-      release-env:
-        required: true
-        type: string        
+      ignore-empty:
+        required: false
+        type: boolean
+        default: false
+      ignore-missing:
+        required: false
+        type: boolean
+        default: false
       organization:
         required: true
         type: string
       project:
         required: true
-        type: string  
-      ignore-missing:
+        type: string
+      release-env:
+        required: true
+        type: string
+      release-name:
+        required: true
+        type: string
+      set-commits:
         required: false
-        type: boolean
-        default: false
+        type: string
+        default: "auto"
+      sourcemaps:
+        required: false
+        type: string
+        default: ""
     secrets:
       auth-token:
         required: true
@@ -39,5 +51,8 @@ jobs:
           SENTRY_PROJECT: ${{ inputs.project }}
         with:
           environment: ${{ inputs.release-env }}
-          version: ${{ inputs.release-name }}
+          ignore_empty: ${{ inputs.ignore-empty }}
           ignore_missing: ${{ inputs.ignore-missing }}
+          set_commits:  ${{ inputs.set-commits }}
+          sourcemaps: ${{ inputs.sourcemaps }}
+          version: ${{ inputs.release-name }}
