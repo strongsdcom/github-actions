@@ -26,6 +26,10 @@ on:
         required: false
         type: string
         default: ''
+      sourcemap-cache:
+        required: false
+        type: string
+        default: ''
 
     outputs:
       image-tag:
@@ -92,3 +96,10 @@ jobs:
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      - name: Store sourcemaps
+        if: inputs.sourcemap-cache != ''
+        uses: actions/cache@v3
+        with:
+          path: dist/**/*.map
+          key: sourcemaps-${{ github.repository }}-${{ github.ref }} 
+
