@@ -11,9 +11,8 @@ on:
         required: true
         type: string
       aws-region: 
-        required: false
+        required: true
         type: string
-        default: 'eu-north-1'
       release-name:
         required: true
         type: string
