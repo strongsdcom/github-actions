@@ -16,9 +16,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ inputs.env }}
   cancel-in-progress: true
 
-env:
-  STAGING_URL: https://app-staging.example.com
-  DEV_URL: https://app-dev.example.com
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   docker-build-multi:
@@ -26,11 +26,11 @@ jobs:
     secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      aws-account: ${{ secrets.AWS_ACCOUNT }}
-    with:
       build-args: |
         SENTRY_ENVIRONMENT=${{ inputs.env }}
-        SENTRY_DSN=https://d55c6efeb9b841e791ac5dfebe96e396@o415134.ingest.sentry.io/6133152
+        SENTRY_DSN=${{ vars.SENTRY_DSN }}
+    with:
+      aws-account: ${{ vars.AWS_ACCOUNT }}
       ecr-name: strongsdcom/app-${{ inputs.env }}
   
   deploy-multi:
@@ -38,14 +38,14 @@ jobs:
     needs: docker-build-multi
     environment:
       name: ${{ inputs.env }}
-      url: ${{ (inputs.env == 'staging' && env.STAGING_URL) || (inputs.env == 'dev' && env.DEV_URL) }}
+      url: ${{ (inputs.env == 'staging' && vars.ENVIRONMENT_URL_STAGING) || (inputs.env == 'dev' && vars.ENVIRONMENT_URL_DEV) }}
     secrets:
       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      aws-account: ${{ secrets.AWS_ACCOUNT }}
       gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
     with:
-      release-name: ${{ inputs.env }}-app
+      aws-account: ${{ vars.AWS_ACCOUNT }}
+      release-name: ${{ vars.HELM_RELEASE_NAME }}
       helm-set-values: |
         a=1
         b=2
@@ -53,7 +53,7 @@ jobs:
         ./.deploy/values/${{ inputs.env }}/config.yaml
         ./.deploy/values/${{ inputs.env }}/secrets.yaml
       namespace: ${{ inputs.env }}
-      cluster-name: example-cluster
+      cluster-name: ${{ vars.K8S_CLUSTER_NAME_ERP_MULTI }}
       image-tag: ${{ needs.docker-build-multi.outputs.image-tag }}
       image-repository: ${{ needs.docker-build-multi.outputs.image-repository }}
 
@@ -62,9 +62,11 @@ jobs:
     uses: strongsdcom/github-actions/.github/workflows/sentry-release.yaml@main
     needs: deploy-multi
     with:
+      ignore-empty: true
       release-name: ${{ needs.deploy-multi.outputs.release-name }}
       release-env: ${{ inputs.env }}
       organization: ${{ env.SENTRY_ORG }}
       project: ${{ env.SENTRY_PROJECT }}
+      set-commits: skip
     secrets:
       auth-token: ${{ secrets.SENTRY_AUTH_TOKEN }}
