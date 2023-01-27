@@ -1,0 +1,75 @@
+name: <App> - Deployment [Staging]
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    name: Step1
+    uses: strongsdcom/github-actions/.github/workflows/aws-docker-build.yaml@main
+    secrets:
+      build-args: |
+        <App>_API_BASE_URL=https://<App>-staging.strongsd.com/api/         
+        ERP_ABSENCE_API_BASE_URL=https://erp-absence-staging.strongsd.com/api/         
+        ERP_CORE_API_BASE_URL=https://erp-staging.strongsd.com/api/
+        ERP_IT_API_BASE_URL=https://erp-asset-staging.strongsd.com/api/
+        ERP_TIME_TRACKER_API_BASE_URL=https://erp-time-tracker-staging.strongsd.com/api/
+        GITHUB_SECRET_TOKEN=${{ secrets.READ_GITHUB_PKG_TOKEN }}
+        GITHUB_USER=strongsd-tech
+        SENTRY_ENVIRONMENT=staging
+        SENTRY_DSN=${{ vars.SENTRY_DSN }}
+        SENTRY_RELEASE=<<short-sha>>
+    with:
+      aws-account: ${{ vars.AWS_ACCOUNT_ID_<App>_MULTI }}
+      aws-region: ${{ vars.AWS_REGION_<App>_MULTI }}
+      environment-name: staging
+      registry: ${{ vars.AWS_ACCOUNT_ID_<App>_MULTI }}.dkr.ecr.${{ vars.AWS_REGION_<App>_MULTI }}.amazonaws.com
+      repository: ${{ vars.ECR_REPO_STAGING }}
+  
+  deploy:
+    name: Step2.2
+    uses: strongsdcom/github-actions/.github/workflows/aws-eks-deploy.yaml@main
+    needs: build
+    environment:
+      name: staging
+      url: vars.ENVIRONMENT_URL_STAGING
+    with:
+      aws-account: ${{ vars.AWS_ACCOUNT_ID_<App>_MULTI }}
+      aws-region: ${{ vars.AWS_REGION_ERP_MULTI }}
+      cluster-name: ${{ vars.K8S_CLUSTER_NAME_<App>_MULTI }}
+      environment-name: staging
+      environment-url: ${{ vars.ENVIRONMENT_URL_STAGING }}
+      helm-set-values: |
+        rails.sentry.dsn=${{ vars.SENTRY_DSN }}
+      helm-values: |
+        ./.deploy/values/dev/config.yaml
+        ./.deploy/values/dev/secrets.yaml
+      image-tag: ${{ needs.build.outputs.image-tag }}
+      image-registry: ${{ needs.build.outputs.registry }}
+      image-repository: ${{ needs.build.outputs.repository }}
+      namespace: dev
+      release-name: ${{ vars.HELM_RELEASE_NAME_STAGING }} # STAGING-app
+
+  sentry:
+    name: Step2.1
+    if: success()
+    uses: strongsdcom/github-actions/.github/workflows/sentry-release.yaml@main
+    needs: build
+    with:
+      ignore-empty: true
+      organization: ${{ vars.SENTRY_ORG }}
+      project: ${{ vars.SENTRY_PROJECT }}
+      release-name: ${{ needs.build.outputs.image-tag }}
+      release-env: staging
+      set-commits: skip
+    secrets:
+      auth-token: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      
