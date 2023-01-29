@@ -5,26 +5,30 @@ on:
         required: false
 
     inputs:
-      tags:
-        required: false
-        type: string
-        default: '<<short-sha>>'
       aws-account:
         required: true
         type: string
       aws-region: 
         required: true
         type: string
+      environment-name:
+        required: false
+        type: string
+        default: ''
+      gha-role-name:
+        required: false
+        type: string
+        default: 'gha-ecr'
       registry:
         required: true
         type: string
       repository:
         required: true
         type: string
-      environment-name:
+      tags:
         required: false
         type: string
-        default: ''
+        default: '<<short-sha>>'
 
     outputs:
       image-tag:
@@ -62,7 +66,7 @@ jobs:
       - name: AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/gha-ecr
+          role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/${{ inputs.gha-role-name }}
           aws-region: ${{ inputs.aws-region }}
           mask-aws-account-id: 'no'
       - name: Login to Amazon ECR

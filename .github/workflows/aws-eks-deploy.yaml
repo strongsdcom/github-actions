@@ -1,9 +1,9 @@
 on:
   workflow_call:
     secrets:
-      gpg-private-key:
-        required: false
       gpg-passphrase:
+        required: false
+      gpg-private-key:
         required: false
 
     inputs:
@@ -13,37 +13,7 @@ on:
       aws-region: 
         required: true
         type: string
-      release-name:
-        required: true
-        type: string
-      helm-set-values:
-        required: false
-        type: string
-        default: ''
-      helm-values:
-        required: true
-        type: string
-      namespace:
-        required: true
-        type: string
-      has-secrets:
-        required: false
-        type: boolean
-        default: true
-      sops-version:
-        required: false
-        type: string
-        default: '3.6.1'
       cluster-name:
-        required: true
-        type: string
-      image-tag:
-        required: true
-        type: string
-      image-registry:
-        required: true
-        type: string  
-      image-repository:
         required: true
         type: string
       environment-name:
@@ -54,6 +24,40 @@ on:
         required: false
         type: string
         default: ''
+      gha-role-name:
+        required: false
+        type: string
+        default: 'gha-eks'
+      has-secrets:
+        required: false
+        type: boolean
+        default: true
+      helm-set-values:
+        required: false
+        type: string
+        default: ''
+      helm-values:
+        required: true
+        type: string
+      image-registry:
+        required: true
+        type: string  
+      image-repository:
+        required: true
+        type: string
+      image-tag:
+        required: true
+        type: string
+      namespace:
+        required: true
+        type: string
+      release-name:
+        required: true
+        type: string
+      sops-version:
+        required: false
+        type: string
+        default: '3.6.1'
 
     outputs:
       image-tag:
@@ -98,7 +102,7 @@ jobs:
       - name: AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/gha-eks
+          role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/${{ inputs.gha-role-name }}
           aws-region: ${{ inputs.aws-region }}
           mask-aws-account-id: 'no'
 
