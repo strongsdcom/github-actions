@@ -1,4 +1,4 @@
-name: <App> - deploment [Production]
+name: <App> - CD [Production]
 
 on:
   workflow_dispatch:
@@ -19,27 +19,24 @@ jobs:
     secrets:
       build-args: |
         <App>_API_BASE_URL=https://<App>-dev.strongsd.com/api/ 
-        ERP_ABSENCE_API_BASE_URL=https://erp-absence.strongsd.com/api/
-        ERP_CORE_API_BASE_URL=https://erp.strongsd.com/api/
-        ERP_IT_API_BASE_URL=https://erp-asset.strongsd.com/api/
-        ERP_TIME_TRACKER_API_BASE_URL=https://erp-time-tracker.strongsd.com/api/
+        SOME_APP_ENV=XXX
         GITHUB_SECRET_TOKEN=${{ secrets.READ_GITHUB_PKG_TOKEN }}
         GITHUB_USER=strongsd-tech
         SENTRY_DSN=${{ vars.SENTRY_DSN }}
         SENTRY_ENVIRONMENT=production
         SENTRY_RELEASE=${{ github.ref_name }}
     with:
-      aws-account: ${{ vars.AWS_ACCOUNT_ID_ERP_PROD }}
-      aws-region: ${{ vars.AWS_REGION_ERP_PROD }}
+      aws-account: ${{ vars.AWS_ACCOUNT_ID_<App>_PROD }}
+      aws-region: ${{ vars.AWS_REGION_<App>_PROD }}
       environment-name: production
-      registry: ${{ vars.AWS_ACCOUNT_ID_ERP_PROD }}.dkr.ecr.${{ vars.AWS_REGION_ERP_PROD }}.amazonaws.com
+      registry: ${{ vars.AWS_ACCOUNT_ID_<app>_PROD }}.dkr.ecr.${{ vars.AWS_REGION_<App>_PROD }}.amazonaws.com
       repository: ${{ vars.ECR_REPO_PROD }}
       tags: |
         ${{ github.ref_name }}
         latest
   
   deploy:
-    name: Step2.2
+    name: Step2
     uses: strongsdcom/github-actions/.github/workflows/aws-eks-deploy.yaml@main
     needs: build
     with:
@@ -58,17 +55,3 @@ jobs:
       image-tag: ${{ needs.build.outputs.image-tag }}
       namespace: production
       release-name: ${{ vars.HELM_RELEASE_NAME_PROD }} # production-app
-  
-  sentry:
-    name: Step2.1
-    if: success()
-    uses: strongsdcom/github-actions/.github/workflows/sentry-release.yaml@main
-    needs: build
-    with:
-      ignore-empty: true
-      organization: ${{ vars.SENTRY_ORG }}
-      project: ${{ vars.SENTRY_PROJECT }}
-      release-name: ${{ needs.build.outputs.image-tag }}
-      release-env: production
-    secrets:
-      auth-token: ${{ secrets.SENTRY_AUTH_TOKEN }}
