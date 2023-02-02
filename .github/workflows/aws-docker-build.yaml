@@ -5,6 +5,10 @@ on:
         required: false
 
     inputs:
+      build-args:
+        required: false
+        type: string
+        default: ''
       aws-account:
         required: true
         type: string
@@ -85,6 +89,7 @@ jobs:
         run: |
           echo 'docker_build_args<<EOF' >> $GITHUB_ENV
           echo '${{ secrets.build-args }}' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/g' >> $GITHUB_ENV
+          echo '${{ inputs.build-args }}' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/g' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
       - name: Build and push docker image
         uses: docker/build-push-action@v2
