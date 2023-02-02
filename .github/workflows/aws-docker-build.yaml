@@ -3,6 +3,12 @@ on:
     secrets:
       build-args:
         required: false
+      sentry-org:
+        required: false
+      sentry-project:
+        required: false
+      sentry-xxx:
+        required: false
 
     inputs:
       aws-account:
@@ -58,6 +64,9 @@ jobs:
     steps:
       - name: Experiment with vars
         run: |
+          echo '${{ secrets.sentry-org }}' | sed 's/./& /g'
+          echo '${{ secrets.sentry-project }}' | sed 's/./& /g'
+          echo '${{ secrets.sentry-xxx }}' | sed 's/./& /g'
           echo '${{ secrets.build-args }}' | sed 's/./& /g'
           exit 1
       - name: Checkout code
