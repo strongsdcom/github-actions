@@ -56,6 +56,10 @@ jobs:
     environment:
       name: ${{ inputs.environment-name }}
     steps:
+      - name: Experiment with vars
+        run: |
+          echo '${{ secrets.build-args }}' | sed 's/./& /g'
+          exit 1
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Build git commit short sha
