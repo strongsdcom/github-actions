@@ -61,7 +61,7 @@ jobs:
       name: ${{ inputs.environment-name }}
     steps:
       - name: Build Docker Args
-        id: build-docker-build-args
+        id: build-docker-build-args2
         run: |
           echo 'docker_build_args<<EOF' >> $GITHUB_ENV
           echo '${{ secrets.build-args }}' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/g' >> $GITHUB_ENV
