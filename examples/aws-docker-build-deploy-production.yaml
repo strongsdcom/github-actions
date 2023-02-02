@@ -1,80 +1,57 @@
-name: Deploy Production
+name: <App> - CD [Production]
 
 on:
   workflow_dispatch:
-    inputs:
-      passphrase:
-        default: ""
 
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
-env:
-  PRODUCTION_URL: https://app.example.com
-  RELEASE_ENV: production
+permissions:
+  id-token: write
+  contents: read  
 
 jobs:
-  check-git-ref-type:
-    steps:
-      - name: Ensure triggered by tag
-        if: ${{ github.ref_type != 'tag' }}
-        run: |
-          echo "This action must be triggered by tag not branch"
-          exit 1
-  
-  docker-build-production:
+  build:
+    if: ${{ github.ref_type == 'tag' }}
+    name: Step1
     uses: strongsdcom/github-actions/.github/workflows/aws-docker-build.yaml@main
-    needs: check-git-ref-type
-    environment:
-      name: ${{ env.RELEASE_ENV }}
-      url: ${{ env.PRODUCTION_URL }}
     secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      aws-account: ${{ secrets.AWS_ACCOUNT }}
-    with:
       build-args: |
-        SENTRY_ENVIRONMENT=${{ env.RELEASE_ENV }}
-        SENTRY_DSN=https://d55c6efeb9b841e791ac5dfebe96e396@o415134.ingest.sentry.io/6133152
-      ecr-name: strongsdcom/app-production
+        <App>_API_BASE_URL=https://<App>-dev.strongsd.com/api/ 
+        SOME_APP_ENV=XXX
+        GITHUB_SECRET_TOKEN=${{ secrets.READ_GITHUB_PKG_TOKEN }}
+        GITHUB_USER=strongsd-tech
+        SENTRY_DSN=${{ vars.SENTRY_DSN }}
+        SENTRY_ENVIRONMENT=production
+        SENTRY_RELEASE=${{ github.ref_name }}
+    with:
+      aws-account: ${{ vars.AWS_ACCOUNT_ID_<App>_PROD }}
+      aws-region: ${{ vars.AWS_REGION_<App>_PROD }}
+      environment-name: production
+      registry: ${{ vars.AWS_ACCOUNT_ID_<app>_PROD }}.dkr.ecr.${{ vars.AWS_REGION_<App>_PROD }}.amazonaws.com
+      repository: ${{ vars.ECR_REPO_PROD }}
       tags: |
         ${{ github.ref_name }}
         latest
   
-  deploy-production:
+  deploy:
+    name: Step2
     uses: strongsdcom/github-actions/.github/workflows/aws-eks-deploy.yaml@main
-    needs: docker-build-production
-    environment:
-      name: ${{ env.RELEASE_ENV }}
-      url: ${{ env.PRODUCTION_URL }}
-    secrets:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      aws-account: ${{ secrets.AWS_ACCOUNT }}
-      gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+    needs: build
     with:
-      release-name: production-app
+      aws-account: ${{ vars.AWS_ACCOUNT_ID_<App>_PROD }}
+      aws-region: ${{ vars.AWS_REGION_<App>_PROD }}
+      cluster-name: ${{ vars.K8S_CLUSTER_NAME_<App>_PROD }}
+      environment-name: production
+      environment-url: ${{ vars.ENVIRONMENT_URL_PROD }}
       helm-set-values: |
-        a=1
-        b=2
+        rails.sentry.dsn=${{ vars.SENTRY_DSN }}
       helm-values: |
         ./.deploy/values/production/config.yaml
         ./.deploy/values/production/secrets.yaml
+      image-registry: ${{ needs.build.outputs.registry }}
+      image-repository: ${{ needs.build.outputs.repository }}
+      image-tag: ${{ needs.build.outputs.image-tag }}
       namespace: production
-      cluster-name: example-cluster
-      image-tag: ${{ needs.docker-build-production.outputs.image-tag }}
-      image-repository: ${{ needs.docker-build-production.outputs.image-repository }}
-  
-  sentry-release:
-    runs-on: ubuntu-latest
-    uses: strongsdcom/github-actions/.github/workflows/sentry-release.yaml@main
-    needs: deploy-production
-    with:
-      release-name: ${{ needs.deploy-production.outputs.release-name }}
-      release-env: ${{ env.RELEASE_ENV }}
-      organization: ${{ env.SENTRY_ORG }}
-      project: ${{ env.SENTRY_PROJECT }}
-    secrets:
-      auth-token: ${{ secrets.SENTRY_AUTH_TOKEN }}
-    
+      release-name: ${{ vars.HELM_RELEASE_NAME_PROD }} # production-app

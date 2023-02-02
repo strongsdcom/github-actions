@@ -1,0 +1,57 @@
+name: <App> - CD [Dev]
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    name: Step1
+    uses: strongsdcom/github-actions/.github/workflows/aws-docker-build.yaml@main
+    secrets:
+      build-args: |
+        <App>_API_BASE_URL=https://<App>-dev.strongsd.com/api/         
+        SOME_APP_ENV=XXX
+        GITHUB_SECRET_TOKEN=${{ secrets.READ_GITHUB_PKG_TOKEN }}
+        GITHUB_USER=strongsd-tech
+        SENTRY_ENVIRONMENT=dev
+        SENTRY_DSN=${{ vars.SENTRY_DSN }}
+        SENTRY_RELEASE=<<short-sha>>
+    with:
+      aws-account: ${{ vars.AWS_ACCOUNT_ID_<App>_MULTI }}
+      aws-region: ${{ vars.AWS_REGION_<App>_MULTI }}
+      environment-name: dev
+      registry: ${{ vars.AWS_ACCOUNT_ID_<App>_MULTI }}.dkr.ecr.${{ vars.AWS_REGION_<App>_MULTI }}.amazonaws.com
+      repository: ${{ vars.ECR_REPO_DEV }}
+  
+  deploy:
+    name: Step2
+    uses: strongsdcom/github-actions/.github/workflows/aws-eks-deploy.yaml@main
+    needs: build
+    environment:
+      name: dev
+      url: vars.ENVIRONMENT_URL_DEV
+    with:
+      aws-account: ${{ vars.AWS_ACCOUNT_ID_<App>_MULTI }}
+      aws-region: ${{ vars.AWS_REGION_<App>_MULTI }}
+      cluster-name: ${{ vars.K8S_CLUSTER_NAME_<App>_MULTI }}
+      environment-name: dev
+      environment-url: ${{ vars.ENVIRONMENT_URL_DEV }}
+      helm-set-values: |
+        rails.sentry.dsn=${{ vars.SENTRY_DSN }}
+      helm-values: |
+        ./.deploy/values/dev/config.yaml
+        ./.deploy/values/dev/secrets.yaml
+      image-tag: ${{ needs.build.outputs.image-tag }}
+      image-registry: ${{ needs.build.outputs.registry }}
+      image-repository: ${{ needs.build.outputs.repository }}
+      namespace: dev
+      release-name: ${{ vars.HELM_RELEASE_NAME_DEV }} # dev-app
+      
