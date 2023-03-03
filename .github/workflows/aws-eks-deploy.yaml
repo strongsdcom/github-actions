@@ -57,7 +57,7 @@ on:
       sops-version:
         required: false
         type: string
-        default: '3.6.1'
+        default: '3.7.3'
 
     outputs:
       image-tag:
@@ -93,14 +93,14 @@ jobs:
           passphrase: ${{ secrets.gpg-passphrase }}
 
       - name: Install Helm
-        uses: azure/setup-helm@v3.3
+        uses: azure/setup-helm@v3.5
 
       - name: Install Helm Secrets
         if: ${{ inputs.has-secrets }}
         run: helm plugin install https://github.com/jkroepke/helm-secrets        
 
       - name: AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/${{ inputs.gha-role-name }}
           aws-region: ${{ inputs.aws-region }}
