@@ -5,6 +5,8 @@ on:
         required: false
       gpg-private-key:
         required: false
+      helm-set-values:
+        required: false
 
     inputs:
       aws-account: 
@@ -123,8 +125,9 @@ jobs:
       - name: Build Helm Set Values
         id: build-helm-set-values
         run: |
-          helm_set_values=$(echo '${{ inputs.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
-          echo "helm-set-values=$helm_set_values" >> $GITHUB_OUTPUT
+          helm_set_values_inputs=$(echo '${{ inputs.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
+          helm_set_values_secrets=$(echo '${{ secrets.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
+          echo "helm-set-values=$helm_set_values_inputs $helm_set_values_secrets" >> $GITHUB_OUTPUT
 
       - name: Build DeployedAt
         id: build-deployed-at
