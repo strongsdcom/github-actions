@@ -9,12 +9,12 @@ on:
         required: false
         type: string
         default: ''
-      linode-account:
-        required: true
-        type: string
-      linode-region:
-        required: true
-        type: string
+#      linode-account:
+#        required: true
+#        type: string
+#      linode-region:
+#        required: true
+#        type: string
       environment-name:
         required: false
         type: string
