@@ -103,9 +103,6 @@ jobs:
           LINODE_TOKEN: ${{ secrets.linode-token }}
           CLUSTER_NAME: ${{ inputs.cluster-name }}
 
-      - name: Secure kubeconfig permissions
-        run: sudo chown $USER $HOME/.kube/config && chmod 600 $HOME/.kube/config
-
       - name: Build Helm Values
         id: build-helm-values
         run: |
