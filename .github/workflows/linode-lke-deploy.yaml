@@ -107,7 +107,7 @@ jobs:
         uses: Azure/k8s-set-context@v1
         with:
           method: kubeconfig
-          kubeconfig: ${{ env.KUBE_CONFIG }}
+          kubeconfig: ${{ env.KUBE_CONFIG_DATA }}
 
       - name: Build Helm Values
         id: build-helm-values
