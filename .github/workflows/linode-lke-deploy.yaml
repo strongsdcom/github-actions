@@ -9,12 +9,6 @@ on:
         required: false
 
     inputs:
-      linode-account:
-        required: true
-        type: string
-      linode-region:
-        required: true
-        type: string
       cluster-name:
         required: true
         type: string
@@ -26,10 +20,6 @@ on:
         required: false
         type: string
         default: ''
-#      gha-role-name:
-#        required: false
-#        type: string
-#        default: 'gha-eks'
       has-secrets:
         required: false
         type: boolean
