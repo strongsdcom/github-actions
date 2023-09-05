@@ -97,6 +97,8 @@ jobs:
 
       - name: Configure LKE
         uses: mavieth/linode-authenticator@master
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         with:
           LINODE_TOKEN: ${{ secrets.linode-token }}
           CLUSTER_NAME: ${{ inputs.cluster-name }}
