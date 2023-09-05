@@ -103,10 +103,11 @@ jobs:
           LINODE_TOKEN: ${{ secrets.linode-token }}
           CLUSTER_NAME: ${{ inputs.cluster-name }}
 
-      - name: Check KUBECONFIG settings
-        id: check-kube-config-settings
-        run: |
-          less $KUBE_CONFIG
+      - name: Set Kubernetes Context
+        uses: Azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ env.KUBE_CONFIG }}
 
       - name: Build Helm Values
         id: build-helm-values
