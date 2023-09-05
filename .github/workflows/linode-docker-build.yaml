@@ -5,10 +5,8 @@ on:
         required: false
       registry-user:
         required: true
-        type: string
       registry-password:
         required: true
-        type: string
 
     inputs:
       build-args:
