@@ -7,8 +7,6 @@ on:
         required: false
       helm-set-values:
         required: false
-      linode-token:
-        required: true
 
     inputs:
       cluster-name:
