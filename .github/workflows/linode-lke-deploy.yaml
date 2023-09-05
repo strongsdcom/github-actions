@@ -103,6 +103,12 @@ jobs:
           LINODE_TOKEN: ${{ secrets.linode-token }}
           CLUSTER_NAME: ${{ inputs.cluster-name }}
 
+      - name: Set KUBECONFIG Variable
+        id: set-kube-config-var
+        run: |
+          export KUBECONFIG=$KUBE_CONFIG
+          env
+
       - name: Build Helm Values
         id: build-helm-values
         run: |
