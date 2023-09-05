@@ -7,6 +7,8 @@ on:
         required: false
       helm-set-values:
         required: false
+      linode-token:
+        required: true
 
     inputs:
       cluster-name:
@@ -96,7 +98,7 @@ jobs:
       - name: Configure LKE
         uses: mavieth/linode-authenticator@master
         with:
-          LINODE_TOKEN: ${{ secrets.LINODE_TOKEN }}
+          LINODE_TOKEN: ${{ secrets.linode-token }}
           CLUSTER_NAME: ${{ inputs.cluster-name }}
 
       - name: Secure kubeconfig permissions
