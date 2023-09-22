@@ -132,7 +132,7 @@ jobs:
             --namespace ${{ inputs.namespace }} \
             ${{ steps.build-helm-values.outputs.helm-values }} \
             --set image.tag=${{ inputs.image-tag }} \
-            --set image.repository=${{ inputs.image-registry }}/${{ inputs.image-repository }} \
+            --set image.repository=${{ inputs.image-repository }} \
             --set deployedBy='ci/cd by ${{ github.actor }}' \
             --set deployedAt='${{ steps.build-deployed-at.outputs.deployed-at }}' \
             ${{ steps.build-helm-set-values.outputs.helm-set-values }}
