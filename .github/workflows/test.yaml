@@ -17,7 +17,7 @@ jobs:
         run: |
           helm_set_values_inputs=$(echo '${{ inputs.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
           helm_set_values_secrets=$(echo '${{ secrets.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
-          echo "helm-set-values=$helm_set_values_inputs $helm_set_values_secrets" >> $GITHUB_OUTPUT
+          echo "helm-set-values=$helm_set_values_inputs $helm_set_values_secrets" >> result.txt
       - name: Show result
         id: show result
-        run: cat $GITHUB_OUTPUT
+        run: cat result.txt
