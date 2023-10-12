@@ -126,17 +126,6 @@ jobs:
         id: build-deployed-at
         run: echo "deployed-at=$(date +"%Y-%m-%d %T %Z")" >> $GITHUB_OUTPUT
 
-      - name: Build Helm Set Values
-        id: build-helm-set-values-test
-        run: |
-          helm_set_values_inputs=$(echo '${{ inputs.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
-          helm_set_values_secrets=$(echo '${{ secrets.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /' | sed 's/./& /g')
-          echo "helm-set-values=$helm_set_values_inputs $helm_set_values_secrets" | sed 's/./& /g' >> result.txt
-
-      - name: Show result
-        id: show-result
-        run: cat result.txt
-
       - name: Helm Upgrade
         run: |
           helm ${{ inputs.has-secrets && 'secrets' || '' }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
