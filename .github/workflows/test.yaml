@@ -19,5 +19,5 @@ jobs:
           helm_set_values_secrets=$(echo '${{ secrets.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
           echo "helm-set-values=$helm_set_values_inputs $helm_set_values_secrets" >> result.txt
       - name: Show result
-        id: show result
+        id: show-result
         run: cat result.txt
