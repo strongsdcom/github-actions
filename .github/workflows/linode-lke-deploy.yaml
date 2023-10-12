@@ -127,7 +127,7 @@ jobs:
         run: echo "deployed-at=$(date +"%Y-%m-%d %T %Z")" >> $GITHUB_OUTPUT
 
       - name: Build Helm Set Values
-        id: build-helm-set-values
+        id: build-helm-set-values-test
         run: |
           helm_set_values_inputs=$(echo '${{ inputs.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
           helm_set_values_secrets=$(echo '${{ secrets.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /' | sed 's/./& /g')
