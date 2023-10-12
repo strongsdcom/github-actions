@@ -18,3 +18,5 @@ jobs:
           helm_set_values_inputs=$(echo '${{ inputs.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
           helm_set_values_test=$(echo '${{ secrets.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
           echo "helm-set-values=$helm_set_values_inputs $helm_set_values_test"
+      - name: Run tmate
+        uses: mxschmitt/action-tmate@v2
