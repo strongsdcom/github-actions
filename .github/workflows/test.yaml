@@ -25,5 +25,5 @@ jobs:
           echo 'EOF' >> $GITHUB_ENV
       - name: Show result
         id: show-result
-        run: echo $helm-set-values | sed 's/./& /g'
+        run: echo ${{ env.helm-set-values }} | sed 's/./& /g'
 
