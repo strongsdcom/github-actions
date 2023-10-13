@@ -24,4 +24,4 @@ jobs:
 
       - name: Show result
         id: show-result
-        run: echo $GITHUB_OUTPUT | sed 's/./& /g'
+        run: echo ${{ steps.build-helm-set-values.outputs.helm-set-values }} | sed 's/./& /g'
