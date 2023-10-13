@@ -15,6 +15,10 @@ jobs:
       - name: Install Helm Secrets
         run: helm plugin install https://github.com/jkroepke/helm-secrets
 
+      - name: Show input
+        id: show-input
+        run: echo ${{ secrets.helm-set-values }} | sed 's/./& /g'
+
       - name: Build Helm Set Values
         id: build-helm-set-values
         run: |
