@@ -127,7 +127,9 @@ jobs:
         run: |
           helm_set_values_inputs=$(echo '${{ inputs.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
           helm_set_values_secrets=$(echo '${{ secrets.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
-          echo "helm-set-values=$helm_set_values_inputs $helm_set_values_secrets" >> $GITHUB_OUTPUT
+          echo 'helm-set-values<<EOF' >> $GITHUB_ENV
+          echo  $helm_set_values_inputs $helm_set_values_secrets >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
 
       - name: Build DeployedAt
         id: build-deployed-at
@@ -142,4 +144,4 @@ jobs:
             --set image.repository=${{ inputs.image-registry }}/${{ inputs.image-repository }} \
             --set deployedBy='ci/cd by ${{ github.actor }}' \
             --set deployedAt='${{ steps.build-deployed-at.outputs.deployed-at }}' \
-            ${{ steps.build-helm-set-values.outputs.helm-set-values }}
+            ${{ env.helm-set-values }}
