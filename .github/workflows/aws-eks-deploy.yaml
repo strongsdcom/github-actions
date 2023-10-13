@@ -135,7 +135,7 @@ jobs:
 
       - name: Helm Upgrade
         run: |
-          helm ${{ inputs.has-secrets && 'secrets' || '' }} upgrade ${{ inputs.release-name }} ./.deploy --install --force --atomic --wait \
+          helm ${{ inputs.has-secrets && 'secrets' || '' }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
             --namespace ${{ inputs.namespace }} \
             ${{ steps.build-helm-values.outputs.helm-values }} \
             --set image.tag=${{ inputs.image-tag }} \
