@@ -15,18 +15,13 @@ jobs:
       - name: Install Helm Secrets
         run: helm plugin install https://github.com/jkroepke/helm-secrets
 
-      - name: Build Helm Values
-        id: build-helm-values
-        run: |
-          helm_values=$(echo '${{ inputs.helm-values }}' | sed '/^$/d' |  sed 's/.*/-f &/' | sed '$!N;s/\n/ /')
-          echo "helm-values=$helm_values" sed 's/./& /g' >> result.txt
-
       - name: Build Helm Set Values
         id: build-helm-set-values
         run: |
           helm_set_values_inputs=$(echo '${{ inputs.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
-          helm_set_values_secrets=$(echo '${{ secrets.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /' | sed 's/./& /g')
-          echo "helm-set-values=$helm_set_values_inputs $helm_set_values_secrets" | sed 's/./& /g' >> result.txt
+          helm_set_values_secrets=$(echo '${{ secrets.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
+          echo "helm-set-values=$helm_set_values_inputs $helm_set_values_secrets" >> $GITHUB_OUTPUT
+
       - name: Show result
         id: show-result
-        run: cat result.txt
+        run: echo $GITHUB_OUTPUT | sed 's/./& /g'
