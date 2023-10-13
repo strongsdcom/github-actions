@@ -17,7 +17,7 @@ jobs:
 
       - name: Show input
         id: show-input
-        run: echo ${{ secrets.helm-set-values }} | sed 's/./& /g'
+        run: echo '${{ secrets.helm-set-values }}' | sed 's/./& /g'
 
       - name: Build Helm Set Values
         id: build-helm-set-values
