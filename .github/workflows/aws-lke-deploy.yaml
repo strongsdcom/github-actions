@@ -126,9 +126,6 @@ jobs:
           method: kubeconfig
           kubeconfig: ${{ env.KUBE_CONFIG_DATA }}
 
-      - name: Secure kubeconfig permissions
-        run: sudo chown $USER $HOME/.kube/config && chmod 600 $HOME/.kube/config
-
       - name: Build Helm Values
         id: build-helm-values
         run: |
