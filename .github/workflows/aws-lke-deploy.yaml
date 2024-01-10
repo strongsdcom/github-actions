@@ -103,18 +103,7 @@ jobs:
 
       - name: Install Helm Secrets
         if: ${{ inputs.has-secrets }}
-        run: helm plugin install https://github.com/jkroepke/helm-secrets        
-
-      - name: AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/${{ inputs.gha-role-name }}
-          aws-region: ${{ inputs.aws-region }}
-          mask-aws-account-id: 'no'
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        run: helm plugin install https://github.com/jkroepke/helm-secrets
 
       - name: Configure LKE
         uses: mavieth/linode-authenticator@master
@@ -129,6 +118,17 @@ jobs:
         with:
           method: kubeconfig
           kubeconfig: ${{ env.KUBE_CONFIG_DATA }}
+
+      - name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/${{ inputs.gha-role-name }}
+          aws-region: ${{ inputs.aws-region }}
+          mask-aws-account-id: 'no'
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build Helm Values
         id: build-helm-values
