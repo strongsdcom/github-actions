@@ -112,6 +112,10 @@ jobs:
           aws-region: ${{ inputs.aws-region }}
           mask-aws-account-id: 'no'
 
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
       - name: Configure LKE
         uses: mavieth/linode-authenticator@master
         env:
