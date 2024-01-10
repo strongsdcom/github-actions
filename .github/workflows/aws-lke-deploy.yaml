@@ -1,0 +1,160 @@
+on:
+  workflow_call:
+    secrets:
+      gpg-passphrase:
+        required: false
+      gpg-private-key:
+        required: false
+      helm-set-values:
+        required: false
+      linode-token:
+        required: true
+
+    inputs:
+      aws-account: 
+        required: true
+        type: string
+      aws-region: 
+        required: true
+        type: string
+      cluster-name:
+        required: true
+        type: string
+      environment-name:
+        required: false
+        type: string
+        default: ''
+      environment-url:
+        required: false
+        type: string
+        default: ''
+      gha-role-name:
+        required: false
+        type: string
+        default: 'gha-eks'
+      has-secrets:
+        required: false
+        type: boolean
+        default: true
+      helm-set-values:
+        required: false
+        type: string
+        default: ''
+      helm-values:
+        required: true
+        type: string
+      image-registry:
+        required: true
+        type: string  
+      image-repository:
+        required: true
+        type: string
+      image-tag:
+        required: true
+        type: string
+      namespace:
+        required: true
+        type: string
+      release-name:
+        required: true
+        type: string
+      sops-version:
+        required: false
+        type: string
+        default: '3.7.3'
+
+    outputs:
+      image-tag:
+        description: "Docker image tag name"
+        value: ${{ jobs.lke-deploy.outputs.image-tag }}
+
+jobs:
+  lke-deploy:
+    name: LKE Deploy
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ inputs.image-tag }}
+    environment:
+      name: ${{ inputs.environment-name }}
+      url: ${{ inputs.environment-url }}
+    env:
+      GPG_KEY_PRESENT: ${{ secrets.gpg-private-key != '' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Sops Binary Installer
+        uses: mdgreenwald/mozilla-sops-action@v1.4.1
+        if: ${{ inputs.has-secrets }}
+        with:
+          version: ${{ inputs.sops-version }}
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v5
+        if: ${{ inputs.has-secrets && env.GPG_KEY_PRESENT == 'true' }}
+        with:
+          gpg_private_key: ${{ secrets.gpg-private-key }}
+          passphrase: ${{ secrets.gpg-passphrase }}
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.11.1
+
+      - name: Install Helm Secrets
+        if: ${{ inputs.has-secrets }}
+        run: helm plugin install https://github.com/jkroepke/helm-secrets        
+
+      - name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/${{ inputs.gha-role-name }}
+          aws-region: ${{ inputs.aws-region }}
+          mask-aws-account-id: 'no'
+
+      - name: Configure LKE
+        uses: mavieth/linode-authenticator@master
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        with:
+          LINODE_TOKEN: ${{ secrets.linode-token }}
+          CLUSTER_NAME: ${{ inputs.cluster-name }}
+
+      - name: Set Kubernetes Context
+        uses: Azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ env.KUBE_CONFIG_DATA }}
+
+      - name: Secure kubeconfig permissions
+        run: sudo chown $USER $HOME/.kube/config && chmod 600 $HOME/.kube/config
+
+      - name: Build Helm Values
+        id: build-helm-values
+        run: |
+          helm_values=$(echo '${{ inputs.helm-values }}' | sed '/^$/d' |  sed 's/.*/-f &/' | sed '$!N;s/\n/ /')
+          echo "helm-values=$helm_values" >> $GITHUB_OUTPUT
+
+      - name: Build Helm Set Values
+        id: build-helm-set-values
+        run: |
+          helm_set_values_inputs=$(echo '${{ inputs.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
+          helm_set_values_secrets=$(echo '${{ secrets.helm-set-values }}' | sed '/^$/d' | sed 's/.*/--set &/' | sed '$!N;s/\n/ /')
+          echo 'helm-set-values<<EOF' >> $GITHUB_ENV
+          echo  $helm_set_values_inputs $helm_set_values_secrets >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
+      - name: Build DeployedAt
+        id: build-deployed-at
+        run: echo "deployed-at=$(date +"%Y-%m-%d %T %Z")" >> $GITHUB_OUTPUT
+
+      - name: Helm Upgrade
+        run: |
+          helm ${{ inputs.has-secrets && 'secrets' || '' }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
+            --namespace ${{ inputs.namespace }} \
+            ${{ steps.build-helm-values.outputs.helm-values }} \
+            --set image.tag=${{ inputs.image-tag }} \
+            --set image.repository=${{ inputs.image-registry }}/${{ inputs.image-repository }} \
+            --set deployedBy='ci/cd by ${{ github.actor }}' \
+            --set deployedAt='${{ steps.build-deployed-at.outputs.deployed-at }}' \
+            ${{ env.helm-set-values }}
