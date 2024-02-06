@@ -33,7 +33,7 @@ on:
         required: false
         type: string
         default: '<<short-sha>>'
-      plarforms:
+      platforms:
         required: false
         type: string
         default: 'linux/amd64, linux/arm64'
