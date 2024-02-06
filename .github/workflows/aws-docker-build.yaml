@@ -33,6 +33,10 @@ on:
         required: false
         type: string
         default: '<<short-sha>>'
+      plarforms:
+        required: false
+        type: string
+        default: 'linux/amd64, linux/arm64'
 
     outputs:
       image-tag:
@@ -97,7 +101,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64, linux/arm64
+          platforms: ${{ inputs.platforms }}
           build-args: ${{ env.docker_build_args }}
           push: true
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
