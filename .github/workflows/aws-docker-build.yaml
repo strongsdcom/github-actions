@@ -33,6 +33,10 @@ on:
         required: false
         type: string
         default: '<<short-sha>>'
+      platforms:
+        required: false
+        type: string
+        default: 'linux/amd64, linux/arm64'
 
     outputs:
       image-tag:
@@ -67,6 +71,7 @@ jobs:
         run: echo "short-sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+        platforms: ${{ inputs.platforms }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: AWS Credentials
@@ -97,6 +102,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
+          platforms: ${{ inputs.platforms }}
           build-args: ${{ env.docker_build_args }}
           push: true
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
