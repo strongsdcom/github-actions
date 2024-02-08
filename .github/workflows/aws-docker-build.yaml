@@ -77,7 +77,6 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-        platforms: ${{ inputs.platforms }}
       - name: AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
