@@ -59,7 +59,8 @@ on:
 jobs:
   docker-build:
     name: Docker Build
-    runs-on: ubuntu-latest
+#    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS, ARM64]
     outputs:
       registry: ${{ inputs.registry }}
       repository: ${{ inputs.repository }}
