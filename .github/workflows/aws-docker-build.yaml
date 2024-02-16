@@ -106,8 +106,8 @@ jobs:
       - name: Create and push manifest images
         uses: Noelware/docker-manifest-action@0.4.1
         with:
-          inputs: ${{ steps.build-tags.outputs.ecr-tags }}
-          images: ${{ steps.build-tags.outputs.ecr-tags }}
+          inputs: ${{ steps.build-tags.outputs.image_tag }}
+          images: ${{ steps.build-tags.outputs.image_tag }}
           push: false
       - name: Build and push docker image
         uses: docker/build-push-action@v4
