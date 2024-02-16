@@ -67,7 +67,7 @@ jobs:
     outputs:
       registry: ${{ inputs.registry }}
       repository: ${{ inputs.repository }}
-      image-tag: ${{ steps.build-tags.outputs.image-tag }}-${{ inputs.platform }}
+      image-tag: ${{ steps.build-tags.outputs.image-tag }}
       short-sha: ${{ steps.build-short-sha.outputs.short-sha }}
     environment:
       name: ${{ inputs.environment-name }}
