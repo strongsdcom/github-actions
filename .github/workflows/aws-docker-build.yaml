@@ -60,6 +60,9 @@ jobs:
   docker-build:
     name: Docker Build
     runs-on: ${{ inputs.run-on }}
+#    strategy:
+#      matrix:
+#        arch: [ amd64, arm64 ]
     outputs:
       registry: ${{ inputs.registry }}
       repository: ${{ inputs.repository }}
@@ -99,19 +102,14 @@ jobs:
           echo '${{ secrets.build-args }}' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/g' >> $GITHUB_ENV
           echo '${{ inputs.build-args }}' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/g' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
-#      - name: Create and push manifest images
-#        uses: Noelware/docker-manifest-action@0.4.1
-#        with:
-#          inputs: ${{ steps.build-tags.outputs.image_tag }}
-#          images: ${{ steps.build-tags.outputs.image_tag }}
-#          push: false
       - name: Build and push docker image
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: ${{ inputs.platform }}
+          platforms: ${{ inputs.platforms }}
           build-args: ${{ env.docker_build_args }}
           push: true
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
