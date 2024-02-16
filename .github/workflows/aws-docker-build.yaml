@@ -12,7 +12,7 @@ on:
       aws-account:
         required: true
         type: string
-      aws-region: 
+      aws-region:
         required: true
         type: string
       environment-name:
@@ -33,14 +33,18 @@ on:
         required: false
         type: string
         default: '<<short-sha>>'
-      platforms:
+      platform:
         required: false
         type: string
-        default: 'linux/amd64, linux/arm64'
+        default: 'linux/amd64'
       build-type:
         required: false
         type: string
         default: ''
+      run-on:
+        required: false
+        type: string
+        default: 'ubuntu-latest'
 
     outputs:
       image-tag:
@@ -59,12 +63,11 @@ on:
 jobs:
   docker-build:
     name: Docker Build
-#    runs-on: ubuntu-latest
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: ${{ inputs.run-on }}
     outputs:
       registry: ${{ inputs.registry }}
       repository: ${{ inputs.repository }}
-      image-tag: ${{ steps.build-tags.outputs.image-tag }}
+      image-tag: ${{ steps.build-tags.outputs.image-tag }}-${{ inputs.platform }}
       short-sha: ${{ steps.build-short-sha.outputs.short-sha }}
     environment:
       name: ${{ inputs.environment-name }}
@@ -100,12 +103,19 @@ jobs:
           echo '${{ secrets.build-args }}' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/g' >> $GITHUB_ENV
           echo '${{ inputs.build-args }}' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/g' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
+      - name: Create and push manifest images
+        uses: Noelware/docker-manifest-action@v0.4.1
+        with:
+          inputs: ${{ steps.build-tags.outputs.ecr-tags }}
+          images: ${{ steps.build-tags.outputs.ecr-tags }}
+          push: false
       - name: Build and push docker image
         uses: docker/build-push-action@v4
         with:
+          provenance: false
           context: .
           file: Dockerfile${{ inputs.build-type }}
-          platforms: ${{ inputs.platforms }}
+          platforms: ${{ inputs.platform }}
           build-args: ${{ env.docker_build_args }}
           push: true
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
