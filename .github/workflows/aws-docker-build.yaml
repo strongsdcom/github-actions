@@ -36,11 +36,7 @@ on:
       platform:
         required: false
         type: string
-        default: 'amd64'
-      build-type:
-        required: false
-        type: string
-        default: ''
+        default: 'linux/amd64'
       run-on:
         required: false
         type: string
@@ -114,7 +110,7 @@ jobs:
         with:
           context: .
           file: Dockerfile${{ inputs.build-type }}
-          platforms: linux/${{ inputs.platform }}
+          platforms: ${{ inputs.platform }}
           build-args: ${{ env.docker_build_args }}
           push: true
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
