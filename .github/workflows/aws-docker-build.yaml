@@ -104,7 +104,7 @@ jobs:
           echo '${{ inputs.build-args }}' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/g' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
       - name: Create and push manifest images
-        uses: Noelware/docker-manifest-action@v0.4.1
+        uses: Noelware/docker-manifest-action@0.4.1
         with:
           inputs: ${{ steps.build-tags.outputs.ecr-tags }}
           images: ${{ steps.build-tags.outputs.ecr-tags }}
