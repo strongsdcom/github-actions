@@ -117,4 +117,4 @@ jobs:
           inputs: ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.tags }}
           images: ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.image_tag }}
           push: true
-          amend: true
+#          amend: true
