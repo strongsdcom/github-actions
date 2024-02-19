@@ -113,7 +113,6 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ inputs.platform }}
       - name: Create and push manifest images
         uses: Noelware/docker-manifest-action@0.4.1
-        build-args: ${{ env.docker_build_args }}
         with:
           inputs: "${{ steps.build-tags.outputs.repository }}:${{ steps.build-tags.outputs.tags }}"
           images: "${{ steps.build-tags.outputs.repository }}:${{ steps.build-tags.outputs.image_tag }}"
