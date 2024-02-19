@@ -113,10 +113,6 @@ jobs:
           cache-from: type=gha,scope=${{ inputs.platform }}
           cache-to: type=gha,mode=max,scope=${{ inputs.platform }}
       - name: Create and push manifest images
-        run: docker manifest create --amend ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.tag }} ${{ steps.build-tags.outputs.ecr-tags }}
-#        uses: Noelware/docker-manifest-action@0.4.1
-#        with:
-#          inputs: ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.tag }}
-#          images: ${{ steps.build-tags.outputs.ecr-tags }}
-#          push: true
-#          amend: true
+        run: |
+           docker manifest create ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.tag }} --amend ${{ steps.build-tags.outputs.ecr-tags }}
+           docker manifest push --purge ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.tag }}
