@@ -64,6 +64,7 @@ jobs:
       registry: ${{ inputs.registry }}
       repository: ${{ inputs.repository }}
       image-tag: ${{ steps.build-tags.outputs.image-tag }}
+      tags: ${{ steps.build-tags.outputs.tags }}
       short-sha: ${{ steps.build-short-sha.outputs.short-sha }}
     environment:
       name: ${{ inputs.environment-name }}
@@ -112,6 +113,7 @@ jobs:
       - name: Create and push manifest images
         uses: Noelware/docker-manifest-action@0.4.1
         with:
-          inputs: ${{ steps.build-tags.outputs.tags }}
-          images: ${{ steps.build-tags.outputs.ecr-tags }}
+          inputs: ${{ steps.build-tags.outputs.repository }}:${{ steps.build-tags.outputs.tags }}
+          images: ${{ steps.build-tags.outputs.repository }}:${{ steps.build-tags.outputs.image_tag }}
           push: true
+          amend: true
