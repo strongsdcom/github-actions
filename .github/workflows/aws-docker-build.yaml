@@ -107,5 +107,5 @@ jobs:
           build-args: ${{ env.docker_build_args }}
           push: true
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
-          cache-from: type=gha,scope=linux/${{ matrix.platform }}
-          cache-to: type=gha,mode=max,scope=linux/${{ matrix.platform }}
+          cache-from: type=gha,scope=linux/${{ inputs.platform }}
+          cache-to: type=gha,mode=max,scope=linux/${{ inputs.platform }}
