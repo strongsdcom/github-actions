@@ -105,7 +105,13 @@ jobs:
           context: .
           platforms: linux/${{ inputs.platform }}
           build-args: ${{ env.docker_build_args }}
-          push: true
+          push: false
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
           cache-from: type=gha,scope=${{ inputs.platform }}
           cache-to: type=gha,mode=max,scope=${{ inputs.platform }}
+      - name: Create and push manifest images
+        uses: Noelware/docker-manifest-action@0.4.1
+        with:
+          inputs: ${{ steps.build-tags.outputs.tags }}
+          images: ${{ steps.build-tags.outputs.ecr-tags }}
+          push: true
