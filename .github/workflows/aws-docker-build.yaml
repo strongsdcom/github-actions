@@ -109,5 +109,3 @@ jobs:
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
           cache-from: type=gha,scope=${{ inputs.platform }}
           cache-to: type=gha,mode=max,scope=${{ inputs.platform }}
-#          cache-from: type=gha,scope=linux/${{ inputs.platform }}
-#          cache-to: type=gha,mode=max,scope=linux/${{ inputs.platform }}
