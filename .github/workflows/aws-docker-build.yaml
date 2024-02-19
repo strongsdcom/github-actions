@@ -116,6 +116,6 @@ jobs:
         uses: Noelware/docker-manifest-action@0.4.1
         with:
           inputs: ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.tag }}
-          images: ${{ steps.build-tags.outputs.ecr_tags }}
+          images: ${{ steps.build-tags.outputs.ecr-tags }}
           push: true
 #          amend: true
