@@ -115,4 +115,4 @@ jobs:
       - name: Create and push manifest images
         run: |
            docker manifest create ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.tag }} --amend ${{ steps.build-tags.outputs.ecr-tags }}
-           docker manifest push --purge ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.tag }}
+           docker manifest push ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.tag }}
