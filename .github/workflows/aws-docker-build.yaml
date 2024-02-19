@@ -115,8 +115,7 @@ jobs:
         uses: Noelware/docker-manifest-action@0.4.1
         build-args: ${{ env.docker_build_args }}
         with:
-          build-args: ${{ env.docker_build_args }}
-          inputs: ${{ steps.build-tags.outputs.repository }}:${{ steps.build-tags.outputs.tags }}
-          images: ${{ steps.build-tags.outputs.repository }}:${{ steps.build-tags.outputs.image_tag }}
+          inputs: "${{ steps.build-tags.outputs.repository }}:${{ steps.build-tags.outputs.tags }}"
+          images: "${{ steps.build-tags.outputs.repository }}:${{ steps.build-tags.outputs.image_tag }}"
           push: true
           amend: true
