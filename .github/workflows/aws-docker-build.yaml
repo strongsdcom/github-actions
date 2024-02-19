@@ -107,7 +107,7 @@ jobs:
           context: .
           platforms: linux/${{ inputs.platform }}
           build-args: ${{ env.docker_build_args }}
-          push: false
+          push: true
           provenance: false
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
           cache-from: type=gha,scope=${{ inputs.platform }}
@@ -118,4 +118,4 @@ jobs:
           inputs: ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.tag }}
           images: ${{ steps.build-tags.outputs.ecr-tags }}
           push: true
-#          amend: true
+          amend: true
