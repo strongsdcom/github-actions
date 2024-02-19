@@ -93,6 +93,7 @@ jobs:
           ecr_tags=$(echo $tags-${{ inputs.platform }}   | sed 's#,#\n#g' | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#' | sed '$!N;s#\n#,#')
           echo "image-tag=$image_tag" >> $GITHUB_OUTPUT
           echo "ecr-tags=$ecr_tags" >> $GITHUB_OUTPUT
+          echo "tag=$tags" >> $GITHUB_OUTPUT
       - name: Build Docker Args
         id: build-docker-build-args
         run: |
@@ -114,7 +115,7 @@ jobs:
       - name: Create and push manifest images
         uses: Noelware/docker-manifest-action@0.4.1
         with:
-          inputs: ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.tags }}
-          images: ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.image_tag }}
+          inputs: ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.tag }}
+          images: ${{ steps.build-tags.outputs.ecr_tags }}
           push: true
 #          amend: true
