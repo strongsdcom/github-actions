@@ -44,9 +44,11 @@ on:
 
     outputs:
       image-tag:
-        description: "Main Docker Image tag name"
+        description: "Docker Image tag name"
         value: ${{ jobs.docker-build.outputs.image-tag }}
-
+      tag:
+        description: "Main Docker Image tag name"
+        value: ${{ jobs.docker-build.outputs.tag }}
       registry:
         description: "Container Registry (ECR)"
         value: ${{ jobs.docker-build.outputs.registry }}
@@ -65,7 +67,7 @@ jobs:
       registry: ${{ inputs.registry }}
       repository: ${{ inputs.repository }}
       image-tag: ${{ steps.build-tags.outputs.image-tag }}
-      tags: ${{ steps.build-tags.outputs.tags }}
+      tag: ${{ steps.build-tags.outputs.tags }}
       short-sha: ${{ steps.build-short-sha.outputs.short-sha }}
     environment:
       name: ${{ inputs.environment-name }}
@@ -94,7 +96,7 @@ jobs:
           ecr_tags=$(echo $tags-${{ inputs.platform }}  | sed 's#,#\n#g' | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#' | sed '$!N;s#\n#,#')
           echo "image-tag=$image_tag" >> $GITHUB_OUTPUT
           echo "ecr-tags=$ecr_tags" >> $GITHUB_OUTPUT
-          echo "tags=$tags" >> $GITHUB_OUTPUT
+          echo "tag=$tags" >> $GITHUB_OUTPUT
       - name: Build Docker Args
         id: build-docker-build-args
         run: |
