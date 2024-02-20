@@ -111,7 +111,6 @@ jobs:
           platforms: linux/${{ inputs.platform }}
           build-args: ${{ env.docker_build_args }}
           push: true
-          provenance: false
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
           cache-from: type=gha,scope=${{ inputs.platform }}
           cache-to: type=gha,mode=max,scope=${{ inputs.platform }}
