@@ -90,10 +90,11 @@ jobs:
         run: |
           tags=$(echo '${{ inputs.tags }}' | awk '{$1=$1};1' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/' | sed '$!N;s/\n/,/')
           image_tag=$(echo $tags-${{ inputs.platform }} | cut -d ',' -f1)
-          ecr_tags=$(echo $tags-${{ inputs.platform }}   | sed 's#,#\n#g' | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#' | sed '$!N;s#\n#,#')
+          ecr_tags=$(echo $tags-${{ inputs.platform }} | sed 's#,#\n#g' | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#' | sed '$!N;s#\n#,#')
+          ecr_tag_main=$(echo $tags | sed 's#,#\n#g' | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#' | sed '$!N;s#\n#,#')
           echo "image-tag=$image_tag" >> $GITHUB_OUTPUT
           echo "ecr-tags=$ecr_tags" >> $GITHUB_OUTPUT
-          echo "tag=$tags" >> $GITHUB_OUTPUT
+          echo "ecr-tag-main=$ecr_tag_main" >> $GITHUB_OUTPUT
       - name: Build Docker Args
         id: build-docker-build-args
         run: |
@@ -111,7 +112,3 @@ jobs:
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
           cache-from: type=gha,scope=${{ inputs.platform }}
           cache-to: type=gha,mode=max,scope=${{ inputs.platform }}
-      - name: Create and push manifest images
-        run: |
-          docker manifest create --amend ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.tag }} ${{ steps.build-tags.outputs.ecr-tags }}
-          docker manifest push ${{ inputs.registry }}/${{ inputs.repository }}:${{ steps.build-tags.outputs.tag }}
