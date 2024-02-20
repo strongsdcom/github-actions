@@ -48,5 +48,4 @@ jobs:
 
       - name: Create and push manifest images
         run: |
-          docker manifest create ${{ inputs.tag }} ${{ inputs.tag-list }}
-          docker manifest push ${{ inputs.tag }}
+          docker buildx imagetools create -t ${{ inputs.tag }} ${{ inputs.tag-list }}
