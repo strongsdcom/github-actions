@@ -26,11 +26,25 @@ on:
         required: false
         type: string
         default: 'ubuntu-latest'
+    outputs:
+      tag:
+        description: "Main Docker Image tag name"
+        value: ${{ jobs.docker-build.outputs.tag }}
+      registry:
+        description: "Container Registry (ECR)"
+        value: ${{ jobs.docker-build.outputs.registry }}
+      repository:
+        description: "Docker Image Repository"
+        value: ${{ jobs.docker-build.outputs.repository }}
 
 jobs:
   docker-manifest:
     name: Docker Manifest
     runs-on: ${{ inputs.run-on }}
+    outputs:
+      registry: ${{ inputs.registry }}
+      repository: ${{ inputs.repository }}
+      tag: ${{ steps.build-tags.outputs.tag }}
     environment:
       name: ${{ inputs.environment-name }}
     steps:
