@@ -12,6 +12,10 @@ on:
         required: false
         type: string
         default: ''
+      gha-role-name:
+        required: false
+        type: string
+        default: 'gha-ecr'
       tag:
         required: true
         type: string
