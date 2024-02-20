@@ -2,10 +2,6 @@ on:
   workflow_call:
 
     inputs:
-      build-args:
-        required: false
-        type: string
-        default: ''
       aws-account:
         required: true
         type: string
