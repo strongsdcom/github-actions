@@ -33,11 +33,22 @@ on:
         required: false
         type: string
         default: '<<short-sha>>'
+      platform:
+        required: false
+        type: string
+        default: 'amd64'
+      run-on:
+        required: false
+        type: string
+        default: 'ubuntu-latest'
 
     outputs:
       image-tag:
-        description: "Main Docker Image tag name"
+        description: "Docker Image tag name"
         value: ${{ jobs.docker-build.outputs.image-tag }}
+      tag:
+        description: "Main Docker Image tag name"
+        value: ${{ jobs.docker-build.outputs.tag }}
       registry:
         description: "Container Registry (ECR)"
         value: ${{ jobs.docker-build.outputs.registry }}
@@ -51,11 +62,12 @@ on:
 jobs:
   docker-build:
     name: Docker Build
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.run-on }}
     outputs:
       registry: ${{ inputs.registry }}
       repository: ${{ inputs.repository }}
       image-tag: ${{ steps.build-tags.outputs.image-tag }}
+      tag: ${{ steps.build-tags.outputs.tag }}
       short-sha: ${{ steps.build-short-sha.outputs.short-sha }}
     environment:
       name: ${{ inputs.environment-name }}
@@ -80,10 +92,11 @@ jobs:
         id: build-tags
         run: |
           tags=$(echo '${{ inputs.tags }}' | awk '{$1=$1};1' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/' | sed '$!N;s/\n/,/')
-          image_tag=$(echo $tags | cut -d ',' -f1)
-          ecr_tags=$(echo $tags  | sed 's#,#\n#g' | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#' | sed '$!N;s#\n#,#')
+          image_tag=$(echo $tags-${{ inputs.platform }} | cut -d ',' -f1)
+          ecr_tags=$(echo $tags-${{ inputs.platform }}  | sed 's#,#\n#g' | sed 's#.*#${{ inputs.registry }}/${{ inputs.repository }}:&#' | sed '$!N;s#\n#,#')
           echo "image-tag=$image_tag" >> $GITHUB_OUTPUT
           echo "ecr-tags=$ecr_tags" >> $GITHUB_OUTPUT
+          echo "tag=$tags" >> $GITHUB_OUTPUT
       - name: Build Docker Args
         id: build-docker-build-args
         run: |
@@ -95,8 +108,10 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
+          platforms: linux/${{ inputs.platform }}
           build-args: ${{ env.docker_build_args }}
           push: true
+          provenance: false
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ inputs.platform }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.platform }}
