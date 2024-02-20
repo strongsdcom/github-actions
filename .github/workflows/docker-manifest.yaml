@@ -1,0 +1,57 @@
+on:
+  workflow_call:
+
+    inputs:
+      aws-account:
+        required: true
+        type: string
+      aws-region:
+        required: true
+        type: string
+      environment-name:
+        required: false
+        type: string
+        default: ''
+      gha-role-name:
+        required: false
+        type: string
+        default: 'gha-ecr'
+      tag:
+        required: true
+        type: string
+      tag-list:
+        required: true
+        type: string
+      run-on:
+        required: false
+        type: string
+        default: 'ubuntu-latest'
+    outputs:
+      tag:
+        description: "Main Docker Image tag name"
+        value: ${{ jobs.docker-manifest.outputs.tag }}
+
+jobs:
+  docker-manifest:
+    name: Docker Manifest
+    runs-on: ${{ inputs.run-on }}
+    outputs:
+      tag: ${{ inputs.tag }}
+    environment:
+      name: ${{ inputs.environment-name }}
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/${{ inputs.gha-role-name }}
+          aws-region: ${{ inputs.aws-region }}
+          mask-aws-account-id: 'no'
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Create and push manifest images
+        run: |
+          docker buildx imagetools create -t ${{ inputs.tag }} ${{ inputs.tag-list }}
