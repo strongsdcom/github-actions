@@ -49,4 +49,4 @@ jobs:
       - name: Create and push manifest images
         run: |
           docker manifest create ${{ inputs.tag }}  ${{ inputs.tag-list }}
-          docker manifest push ${{ inputs.tag }}
+          docker manifest push --purge ${{ inputs.tag }}
