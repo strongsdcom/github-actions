@@ -34,7 +34,7 @@ on:
 jobs:
   docker-manifest:
     name: Docker Manifest
-    runs-on: ${{ inputs.run-on }}
+    runs-on: ${{ fromJson(inputs.run-on) }}
     outputs:
       tag: ${{ inputs.tag }}
     environment:
