@@ -101,7 +101,7 @@ jobs:
 
       - name: Install Helm Secrets
         if: ${{ inputs.has-secrets }}
-        run: helm plugin install https://github.com/jkroepke/helm-secrets        
+        run: helm plugin install https://github.com/jkroepke/helm-secrets --version 3.11.1
 
       - name: AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
