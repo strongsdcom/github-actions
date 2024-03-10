@@ -97,7 +97,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4
         with:
-          version: v4.1.0
+          version: v4
 
       - name: Install Helm Secrets
         if: ${{ inputs.has-secrets }}
