@@ -69,7 +69,8 @@ on:
 jobs:
   eks-deploy:
     name: EKS Deploy
-    runs-on: ubuntu-latest
+#    runs-on: ubuntu-latest
+    runs-on: test-runner
     outputs:
       image-tag: ${{ inputs.image-tag }}
     environment:
@@ -101,7 +102,7 @@ jobs:
 
       - name: Install Helm Secrets
         if: ${{ inputs.has-secrets }}
-        run: helm plugin uninstall secrets && helm plugin install https://github.com/jkroepke/helm-secrets
+        run:  helm plugin uninstall secrets && helm plugin list && helm plugin install https://github.com/jkroepke/helm-secrets && helm plugin list
 
       - name: AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
