@@ -62,7 +62,7 @@ on:
 jobs:
   docker-build:
     name: Docker Build
-    runs-on: ${{ inputs.run-on }}
+    runs-on: ${{ fromJson(inputs.run-on) }}
     outputs:
       registry: ${{ inputs.registry }}
       repository: ${{ inputs.repository }}
