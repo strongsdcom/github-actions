@@ -93,7 +93,12 @@ jobs:
 
       - name: Install Helm Secrets
         if: ${{ inputs.has-secrets }}
-        run: helm plugin list | grep -q secrets && echo "Helm Secrets plugin already installed" || helm plugin install https://github.com/jkroepke/helm-secrets
+        run: |
+          if [[ $(helm plugin list | grep -c "secrets") -eq 0 ]]; then
+              helm plugin install https://github.com/jkroepke/helm-secrets
+          else
+              echo "Helm Secrets plugin already installed"
+          fi
 
       - name: Configure LKE
         uses: mavieth/linode-authenticator@master

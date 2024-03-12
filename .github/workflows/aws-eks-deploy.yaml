@@ -103,7 +103,7 @@ jobs:
       - name: Install Helm Secrets
         if: ${{ inputs.has-secrets }}
         run: |
-          if [[ $(helm search repo helm-secrets | grep -c "helm-secrets") -eq 0 ]]; then
+          if [[ $(helm plugin list | grep -c "secrets") -eq 0 ]]; then
               helm plugin install https://github.com/jkroepke/helm-secrets
           else
               echo "Helm Secrets plugin already installed"
