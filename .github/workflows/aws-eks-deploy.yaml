@@ -69,7 +69,8 @@ on:
 jobs:
   eks-deploy:
     name: EKS Deploy
-    runs-on: ubuntu-latest
+#    runs-on: ubuntu-latest
+    runs-on: test-runner
     outputs:
       image-tag: ${{ inputs.image-tag }}
     environment:
