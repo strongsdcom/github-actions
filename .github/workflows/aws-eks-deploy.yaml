@@ -145,3 +145,7 @@ jobs:
             --set deployedBy='ci/cd by ${{ github.actor }}' \
             --set deployedAt='${{ steps.build-deployed-at.outputs.deployed-at }}' \
             ${{ env.helm-set-values }}
+
+      - name: Helm Uninstall Secrets Plugin
+        if: ${{ inputs.has-secrets }}
+        run: helm plugin uninstall secrets
