@@ -93,7 +93,7 @@ jobs:
 
       - name: Install Helm Secrets
         if: ${{ inputs.has-secrets }}
-        run: helm plugin install https://github.com/jkroepke/helm-secrets        
+        run: helm plugin list | grep -q secrets && echo "Helm Secrets plugin already installed" || helm plugin install https://github.com/jkroepke/helm-secrets
 
       - name: Configure LKE
         uses: mavieth/linode-authenticator@master
@@ -138,7 +138,3 @@ jobs:
             --set deployedBy='ci/cd by ${{ github.actor }}' \
             --set deployedAt='${{ steps.build-deployed-at.outputs.deployed-at }}' \
             ${{ env.helm-set-values }}
-
-      - name: Helm Uninstall Secrets Plugin
-        if: ${{ inputs.has-secrets }}
-        run: helm plugin uninstall secrets

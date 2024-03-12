@@ -69,7 +69,8 @@ on:
 jobs:
   eks-deploy:
     name: EKS Deploy
-    runs-on: ubuntu-latest
+#    runs-on: ubuntu-latest
+    runs-on: test-runner
     outputs:
       image-tag: ${{ inputs.image-tag }}
     environment:
@@ -101,7 +102,12 @@ jobs:
 
       - name: Install Helm Secrets
         if: ${{ inputs.has-secrets }}
-        run: helm plugin install https://github.com/jkroepke/helm-secrets
+        run: |
+          if [[ $(helm search repo helm-secrets | grep -c "helm-secrets") -eq 0 ]]; then
+              helm plugin install https://github.com/jkroepke/helm-secrets
+          else
+              echo "Helm Secrets plugin already installed"
+          fi
 
       - name: AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
@@ -145,7 +151,3 @@ jobs:
             --set deployedBy='ci/cd by ${{ github.actor }}' \
             --set deployedAt='${{ steps.build-deployed-at.outputs.deployed-at }}' \
             ${{ env.helm-set-values }}
-
-      - name: Helm Uninstall Secrets Plugin
-        if: ${{ inputs.has-secrets }}
-        run: helm plugin uninstall secrets
