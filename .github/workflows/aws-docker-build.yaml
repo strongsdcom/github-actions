@@ -33,6 +33,14 @@ on:
         required: false
         type: string
         default: '<<short-sha>>'
+      platform:
+        required: false
+        type: string
+        default: 'amd64'
+      run-on:
+        required: false
+        type: string
+        default: 'ubuntu-latest'
 
     outputs:
       image-tag:
@@ -51,7 +59,7 @@ on:
 jobs:
   docker-build:
     name: Docker Build
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJson(inputs.run-on) }}
     outputs:
       registry: ${{ inputs.registry }}
       repository: ${{ inputs.repository }}
@@ -95,6 +103,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
+          platforms: linux/${{ inputs.platform }}
           build-args: ${{ env.docker_build_args }}
           push: true
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
