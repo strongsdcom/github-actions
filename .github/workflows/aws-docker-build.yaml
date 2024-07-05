@@ -36,7 +36,7 @@ on:
       platform:
         required: false
         type: string
-        default: 'amd64'
+        default: 'linux/amd64'
       run-on:
         required: false
         type: string
@@ -103,7 +103,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/${{ inputs.platform }}
+          platforms: ${{ inputs.platform }}
           build-args: ${{ env.docker_build_args }}
           push: true
           tags: ${{ steps.build-tags.outputs.ecr-tags }}
