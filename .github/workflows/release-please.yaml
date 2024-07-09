@@ -18,6 +18,13 @@ on:
       extra-files:
         required: false
         type: string
+      config-file:
+        required: false
+        type: string
+      manifest-file:
+        required: false
+        type: string
+
     outputs:
       release-created:
         description: "Indicates if GitHub release has been created by the action"
@@ -44,5 +51,7 @@ jobs:
           release-type: ${{ inputs.release-type }}
           bump-minor-pre-major: ${{ inputs.bump-minor-pre-major }}
           bump-patch-for-minor-pre-major: ${{ inputs.bump-patch-for-minor-pre-major }}
+          config-file: ${{ inputs.config-file }}
+          manifest-file: ${{ inputs.manifest-file }}
           extra-files: ${{ inputs.extra-files }}
           token: ${{ (secrets.github-token == '' && secrets.GITHUB_TOKEN) || secrets.github-token }}
