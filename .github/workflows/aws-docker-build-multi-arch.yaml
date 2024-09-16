@@ -78,7 +78,7 @@ jobs:
         id: build-short-sha
         run: echo "short-sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
       - name: AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
