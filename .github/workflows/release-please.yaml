@@ -4,9 +4,8 @@ on:
   workflow_call:
     inputs:
       release-type:
-        required: false
         type: string
-        default: 'simple'
+        required: false
       config-file:
         type: string
         required: false
@@ -29,8 +28,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  release:
-    name: GitHub Release
+  release-please:
+    name: Release
     runs-on: ubuntu-latest
     outputs:
       release-created: ${{ steps.release.outputs.release_created }}
