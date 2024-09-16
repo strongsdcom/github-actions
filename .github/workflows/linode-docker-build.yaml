@@ -60,7 +60,7 @@ jobs:
         id: build-short-sha
         run: echo "short-sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Login to private registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ${{ inputs.registry }}
           username: ${{ secrets.registry-user }}
