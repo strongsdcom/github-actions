@@ -1,0 +1,16 @@
+name: Release Me
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-please:
+    uses: ./.github/workflows/release-please.yaml
+    with:
+      release-type: simple
