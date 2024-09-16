@@ -88,7 +88,7 @@ jobs:
           version: ${{ inputs.sops-version }}
 
       - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v5
+        uses: crazy-max/ghaction-import-gpg@v6
         if: ${{ inputs.has-secrets && env.GPG_KEY_PRESENT == 'true' }}
         with:
           gpg_private_key: ${{ secrets.gpg-private-key }}
