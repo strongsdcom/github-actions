@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/strongsdcom/github-actions/compare/v2.0.0...v2.0.1) (2024-09-16)
+
+
+### Bug Fixes
+
+* remove default release-type ([293782f](https://github.com/strongsdcom/github-actions/commit/293782fff7f33d0500f90963bc820b8bbea67a0b))
+
 ## [2.0.0](https://github.com/strongsdcom/github-actions/compare/v1.0.0...v2.0.0) (2024-09-16)
 
 
