@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/strongsdcom/github-actions/compare/v1.0.0...v2.0.0) (2024-09-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* **release-please:** upgrade to v4
+
+### Features
+
+* **release-please:** upgrade to v4 ([65ff2d0](https://github.com/strongsdcom/github-actions/commit/65ff2d0ea052c55b11f419b149da673710289ab9))
+
 ## 1.0.0 (2024-09-16)
 
 
