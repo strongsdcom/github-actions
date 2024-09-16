@@ -109,7 +109,7 @@ jobs:
           CLUSTER_NAME: ${{ inputs.cluster-name }}
 
       - name: Set Kubernetes Context
-        uses: Azure/k8s-set-context@v1
+        uses: Azure/k8s-set-context@v4
         with:
           method: kubeconfig
           kubeconfig: ${{ env.KUBE_CONFIG_DATA }}
