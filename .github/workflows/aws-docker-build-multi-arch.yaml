@@ -73,7 +73,7 @@ jobs:
       name: ${{ inputs.environment-name }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build git commit short sha
         id: build-short-sha
         run: echo "short-sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
