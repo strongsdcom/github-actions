@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/strongsdcom/github-actions/compare/v2.0.1...v2.0.2) (2025-04-14)
+
+
+### Bug Fixes
+
+* rename version to release ([#38](https://github.com/strongsdcom/github-actions/issues/38)) ([2d5657e](https://github.com/strongsdcom/github-actions/commit/2d5657ebc8c441407a4381b38d2c9d8b76b2a2ba))
+
 ## [2.0.1](https://github.com/strongsdcom/github-actions/compare/v2.0.0...v2.0.1) (2024-09-16)
 
 
