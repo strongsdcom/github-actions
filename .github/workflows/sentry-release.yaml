@@ -53,6 +53,6 @@ jobs:
           environment: ${{ inputs.release-env }}
           ignore_empty: ${{ inputs.ignore-empty }}
           ignore_missing: ${{ inputs.ignore-missing }}
-          set_commits:  ${{ inputs.set-commits }}
+          set_commits: ${{ inputs.set-commits }}
           sourcemaps: ${{ inputs.sourcemaps }}
-          version: ${{ inputs.release-name }}
+          release: ${{ inputs.release-name }}
