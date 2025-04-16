@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3](https://github.com/strongsdcom/github-actions/compare/v2.0.2...v2.0.3) (2025-04-16)
+
+
+### Bug Fixes
+
+* resolve issue with docker layer caching ([#40](https://github.com/strongsdcom/github-actions/issues/40)) ([4a1f354](https://github.com/strongsdcom/github-actions/commit/4a1f354255cee5fa0bc89feaf1e6db13d90bcb2d))
+
 ## [2.0.2](https://github.com/strongsdcom/github-actions/compare/v2.0.1...v2.0.2) (2025-04-14)
 
 
