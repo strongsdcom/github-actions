@@ -109,7 +109,7 @@ jobs:
           fi
 
       - name: AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4.1.0
+        uses: aws-actions/configure-aws-credentials@v4.2.0
         with:
           role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/${{ inputs.gha-role-name }}
           aws-region: ${{ inputs.aws-region }}
