@@ -99,13 +99,6 @@ jobs:
           echo '${{ secrets.build-args }}' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/g' >> $GITHUB_ENV
           echo '${{ inputs.build-args }}' | sed '/^$/d' | sed 's/<<short-sha>>/${{ steps.build-short-sha.outputs.short-sha }}/g' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
       - name: Build and push docker image
         uses: docker/build-push-action@v6
         with:
