@@ -41,6 +41,11 @@ on:
         required: false
         type: string
         default: "['ubuntu-latest']"
+      continue-on-error:
+        required: false
+        type: boolean
+        default: 'false'
+
 
     outputs:
       image-tag:
