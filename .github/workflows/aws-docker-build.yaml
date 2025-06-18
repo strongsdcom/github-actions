@@ -44,7 +44,7 @@ on:
       continue-on-error:
         required: false
         type: boolean
-        default: 'false'
+        default: false
 
 
     outputs:
