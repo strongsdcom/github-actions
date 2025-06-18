@@ -45,7 +45,9 @@ on:
         required: false
         type: boolean
         default: false
-
+      timeout-minutes:
+        required: false
+        type: string
 
     outputs:
       image-tag:
