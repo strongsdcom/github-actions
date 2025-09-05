@@ -9,10 +9,10 @@ on:
         required: false
 
     inputs:
-      aws-account: 
+      aws-account:
         required: true
         type: string
-      aws-region: 
+      aws-region:
         required: true
         type: string
       cluster-name:
@@ -43,7 +43,7 @@ on:
         type: string
       image-registry:
         required: true
-        type: string  
+        type: string
       image-repository:
         required: true
         type: string
@@ -113,7 +113,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/${{ inputs.gha-role-name }}
           aws-region: ${{ inputs.aws-region }}
-          mask-aws-account-id: 'no'
+          mask-aws-account-id: false
 
       - name: Configure EKS
         run: aws eks update-kubeconfig --name ${{ inputs.cluster-name }} --region ${{ inputs.aws-region }}
