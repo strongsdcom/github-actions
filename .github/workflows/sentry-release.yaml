@@ -40,7 +40,7 @@ jobs:
     name: Sentry Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Create Sentry release
