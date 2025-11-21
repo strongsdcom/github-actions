@@ -45,7 +45,7 @@ jobs:
           token: ${{ (secrets.github-token == '' && secrets.GITHUB_TOKEN) || secrets.github-token }}
 
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         if: ${{ steps.release.outputs.release_created }}
 
       - name: Tag major and minor versions

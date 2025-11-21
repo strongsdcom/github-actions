@@ -79,7 +79,7 @@ jobs:
       GPG_KEY_PRESENT: ${{ secrets.gpg-private-key != '' }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Sops Binary Installer
         uses: mdgreenwald/mozilla-sops-action@v1.6.0
