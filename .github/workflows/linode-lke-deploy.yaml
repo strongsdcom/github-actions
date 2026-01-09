@@ -61,7 +61,7 @@ on:
 jobs:
   lke-deploy:
     name: LKE Deploy
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, macmini]
     outputs:
       image-tag: ${{ inputs.image-tag }}
     environment:
