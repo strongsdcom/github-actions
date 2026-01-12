@@ -30,7 +30,7 @@ permissions:
 jobs:
   release-please:
     name: Release
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, macmini]
     outputs:
       release-created: ${{ steps.release.outputs.release_created }}
       tag-name: ${{ steps.release.outputs.tag_name }}
