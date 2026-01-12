@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.4](https://github.com/strongsdcom/github-actions/compare/v2.0.3...v2.0.4) (2026-01-12)
+
+
+### Reverts
+
+* **ci:** change release-please runner back to ubuntu-latest ([#57](https://github.com/strongsdcom/github-actions/issues/57)) ([e9fcc99](https://github.com/strongsdcom/github-actions/commit/e9fcc99b4e4fc8fb7797e96d0c66059c6e5b4edc))
+
 ## [2.0.3](https://github.com/strongsdcom/github-actions/compare/v2.0.2...v2.0.3) (2025-09-05)
 
 
