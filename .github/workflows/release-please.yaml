@@ -12,6 +12,10 @@ on:
       manifest-file:
         type: string
         required: false
+      run-on:
+        required: false
+        type: string
+        default: "['ubuntu-latest']"
     outputs:
       release-created:
         description: "Indicates if GitHub release has been created by the action"
@@ -30,7 +34,7 @@ permissions:
 jobs:
   release-please:
     name: Release
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJson(inputs.run-on) }}
     outputs:
       release-created: ${{ steps.release.outputs.release_created }}
       tag-name: ${{ steps.release.outputs.tag_name }}
