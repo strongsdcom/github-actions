@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/strongsdcom/github-actions/compare/v2.0.4...v2.1.0) (2026-01-14)
+
+
+### Features
+
+* add run-on parameter to release-please ([#59](https://github.com/strongsdcom/github-actions/issues/59)) ([7bd168e](https://github.com/strongsdcom/github-actions/commit/7bd168e79f187b82d77776fa04ec362193d3250b))
+
 ## [2.0.4](https://github.com/strongsdcom/github-actions/compare/v2.0.3...v2.0.4) (2026-01-12)
 
 
