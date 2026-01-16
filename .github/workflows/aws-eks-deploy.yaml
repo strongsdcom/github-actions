@@ -95,9 +95,9 @@ jobs:
           passphrase: ${{ secrets.gpg-passphrase }}
 
       - name: Install Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v4.3.1
         with:
-          version: v3.11.1
+          version: v3.19.4
 
       - name: Install Helm Secrets
         if: ${{ inputs.has-secrets }}
