@@ -40,7 +40,7 @@ on:
       run-on:
         required: false
         type: string
-        default: "['ubuntu-latest']"
+        default: "['strongsd-amd64']"
 
     outputs:
       image-tag:
