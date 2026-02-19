@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.2.0](https://github.com/strongsdcom/github-actions/compare/v2.1.0...v2.2.0) (2026-02-19)
+
+
+### Features
+
+* add run-on input to linode-lke-deploy workflow ([#65](https://github.com/strongsdcom/github-actions/issues/65)) ([ab3da57](https://github.com/strongsdcom/github-actions/commit/ab3da57ddca91e52d22582d4cab12425c67b789c))
+
+
+### Bug Fixes
+
+* refactor token retrieval in release-please workflow ([#62](https://github.com/strongsdcom/github-actions/issues/62)) ([15ec8d8](https://github.com/strongsdcom/github-actions/commit/15ec8d876953f723621afa4c21c6783e16c70202))
+* remove existing gh-token remote before adding new one ([67c1289](https://github.com/strongsdcom/github-actions/commit/67c1289de39e8ac7e1a32b371d411c681a1fcd2f))
+
 ## [2.1.0](https://github.com/strongsdcom/github-actions/compare/v2.0.4...v2.1.0) (2026-01-14)
 
 
