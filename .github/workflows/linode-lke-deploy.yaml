@@ -52,6 +52,10 @@ on:
         required: false
         type: string
         default: '3.7.3'
+      run-on:
+        required: false
+        type: string
+        default: "['self-hosted', 'Linux', 'X64', 'macmini']"
 
     outputs:
       image-tag:
@@ -61,7 +65,7 @@ on:
 jobs:
   lke-deploy:
     name: LKE Deploy
-    runs-on: [self-hosted, Linux, X64, macmini]
+    runs-on: ${{ fromJson(inputs.run-on) }}
     outputs:
       image-tag: ${{ inputs.image-tag }}
     environment:
