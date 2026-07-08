@@ -81,6 +81,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      # Helm 4 PoC: per-run plugin dir, isolated from the shared Helm-3 cache prod uses.
+      - name: Isolate Helm plugins
+        run: echo "HELM_PLUGINS=$RUNNER_TEMP/helm4-plugins-${{ github.run_id }}" >> "$GITHUB_ENV"
+
       - name: Sops Binary Installer
         uses: mdgreenwald/mozilla-sops-action@v1.6.0
         if: ${{ inputs.has-secrets }}
@@ -97,16 +101,17 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4.3.1
         with:
-          version: v3.19.4
+          version: v4.2.2
 
       - name: Install Helm Secrets
         if: ${{ inputs.has-secrets }}
+        # Helm 4: plugin split into 3 packages, `--version` removed (exact URLs), signing
+        # on by default. `--verify=false` is PoC-only — set up verification before merge.
         run: |
-          if [[ $(helm plugin list | grep -c "secrets") -eq 0 ]]; then
-              helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.5
-          else
-              echo "Helm Secrets plugin already installed"
-          fi
+          base="https://github.com/jkroepke/helm-secrets/releases/download/v4.7.7"
+          helm plugin install "$base/secrets-4.7.7.tgz" --verify=false
+          helm plugin install "$base/secrets-getter-4.7.7.tgz" --verify=false
+          helm plugin install "$base/secrets-post-renderer-4.7.7.tgz" --verify=false
 
       - name: AWS Credentials
         uses: aws-actions/configure-aws-credentials@v5.1.1
@@ -141,6 +146,8 @@ jobs:
         run: echo "deployed-at=$(date +"%Y-%m-%d %T %Z")" >> $GITHUB_OUTPUT
 
       - name: Helm Upgrade
+        # Iteration 1: still using the `helm secrets upgrade` wrapper. If Helm 4 rejects
+        # it, switch to `helm upgrade --post-renderer` with the secrets-post-renderer plugin.
         run: |
           helm ${{ inputs.has-secrets && 'secrets' || '' }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
             --namespace ${{ inputs.namespace }} \
