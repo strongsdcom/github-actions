@@ -128,9 +128,21 @@ jobs:
 
       - name: Build Helm Values
         id: build-helm-values
+        # Helm 4: no `helm secrets` wrapper — encrypted values are decrypted via the
+        # `secrets://` getter. Prefix files matching the secrets*.yaml convention.
+        env:
+          HELM_VALUES_INPUT: ${{ inputs.helm-values }}
+          HAS_SECRETS: ${{ inputs.has-secrets }}
         run: |
-          helm_values=$(echo '${{ inputs.helm-values }}' | sed '/^$/d' |  sed 's/.*/-f &/' | sed '$!N;s/\n/ /')
-          echo "helm-values=$helm_values" >> $GITHUB_OUTPUT
+          helm_values=""
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            case "$HAS_SECRETS:$(basename "$f")" in
+              true:secrets*) helm_values="$helm_values -f secrets://$f" ;;
+              *)             helm_values="$helm_values -f $f" ;;
+            esac
+          done <<< "$HELM_VALUES_INPUT"
+          echo "helm-values=$helm_values" >> "$GITHUB_OUTPUT"
 
       - name: Build Helm Set Values
         id: build-helm-set-values
@@ -146,10 +158,10 @@ jobs:
         run: echo "deployed-at=$(date +"%Y-%m-%d %T %Z")" >> $GITHUB_OUTPUT
 
       - name: Helm Upgrade
-        # Iteration 1: still using the `helm secrets upgrade` wrapper. If Helm 4 rejects
-        # it, switch to `helm upgrade --post-renderer` with the secrets-post-renderer plugin.
+        # Helm 4: plain `helm upgrade` (the `helm secrets` wrapper was removed);
+        # encrypted values are decrypted by the secrets:// getter set up above.
         run: |
-          helm ${{ inputs.has-secrets && 'secrets' || '' }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
+          helm upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
             --namespace ${{ inputs.namespace }} \
             ${{ steps.build-helm-values.outputs.helm-values }} \
             --set image.tag=${{ inputs.image-tag }} \
