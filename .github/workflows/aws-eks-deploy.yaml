@@ -81,9 +81,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      # Helm 4 PoC: per-run plugin dir, isolated from the shared Helm-3 cache prod uses.
-      - name: Isolate Helm plugins
-        run: echo "HELM_PLUGINS=$RUNNER_TEMP/helm4-plugins-${{ github.run_id }}" >> "$GITHUB_ENV"
+      # Helm 4 PoC: per-run data home so `helm plugin install` AND runtime getter lookup
+      # both use the same isolated dir (HELM_PLUGINS only affects runtime, not install),
+      # keeping plugins off the shared Helm-3 cache prod uses on this self-hosted runner.
+      - name: Isolate Helm data home
+        run: echo "HELM_DATA_HOME=$RUNNER_TEMP/helm4-data-${{ github.run_id }}" >> "$GITHUB_ENV"
 
       - name: Sops Binary Installer
         uses: mdgreenwald/mozilla-sops-action@v1.6.0
@@ -128,9 +130,10 @@ jobs:
 
       - name: Build Helm Values
         id: build-helm-values
-        # Helm 4 dropped the `helm secrets` wrapper and the CLI secrets:// getter did not
-        # register. helm-secrets only wraps sops, so decrypt secrets*.yaml directly with
-        # sops (AWS KMS, same keys/role) to a temp file and pass it as a plaintext -f.
+        # Helm 4: no `helm secrets` wrapper — encrypted values are decrypted by the
+        # secrets:// getter (helm-secrets-getter). Use an ABSOLUTE path so the URI is
+        # secrets:///abs/path (empty host); a relative ./ would parse the leading dot as
+        # the URL host and break resolution.
         env:
           HELM_VALUES_INPUT: ${{ inputs.helm-values }}
           HAS_SECRETS: ${{ inputs.has-secrets }}
@@ -139,12 +142,8 @@ jobs:
           while IFS= read -r f; do
             [ -z "$f" ] && continue
             case "$HAS_SECRETS:$(basename "$f")" in
-              true:secrets*)
-                dec="$RUNNER_TEMP/$(basename "$f").dec.yaml"
-                sops -d "$f" > "$dec"
-                helm_values="$helm_values -f $dec" ;;
-              *)
-                helm_values="$helm_values -f $f" ;;
+              true:secrets*) helm_values="$helm_values -f secrets://$(realpath "$f")" ;;
+              *)             helm_values="$helm_values -f $f" ;;
             esac
           done <<< "$HELM_VALUES_INPUT"
           echo "helm-values=$helm_values" >> "$GITHUB_OUTPUT"
