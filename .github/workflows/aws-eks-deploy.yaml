@@ -128,8 +128,9 @@ jobs:
 
       - name: Build Helm Values
         id: build-helm-values
-        # Helm 4: no `helm secrets` wrapper — encrypted values are decrypted via the
-        # `secrets://` getter. Prefix files matching the secrets*.yaml convention.
+        # Helm 4 dropped the `helm secrets` wrapper and the CLI secrets:// getter did not
+        # register. helm-secrets only wraps sops, so decrypt secrets*.yaml directly with
+        # sops (AWS KMS, same keys/role) to a temp file and pass it as a plaintext -f.
         env:
           HELM_VALUES_INPUT: ${{ inputs.helm-values }}
           HAS_SECRETS: ${{ inputs.has-secrets }}
@@ -138,8 +139,12 @@ jobs:
           while IFS= read -r f; do
             [ -z "$f" ] && continue
             case "$HAS_SECRETS:$(basename "$f")" in
-              true:secrets*) helm_values="$helm_values -f secrets://$f" ;;
-              *)             helm_values="$helm_values -f $f" ;;
+              true:secrets*)
+                dec="$RUNNER_TEMP/$(basename "$f").dec.yaml"
+                sops -d "$f" > "$dec"
+                helm_values="$helm_values -f $dec" ;;
+              *)
+                helm_values="$helm_values -f $f" ;;
             esac
           done <<< "$HELM_VALUES_INPUT"
           echo "helm-values=$helm_values" >> "$GITHUB_OUTPUT"
