@@ -102,15 +102,29 @@ jobs:
         with:
           version: v4.2.2
 
+      - name: Trust helm-secrets signing key
+        if: ${{ inputs.has-secrets }}
+        # Pin the exact provenance key (jkroepke's). curl imports every key the endpoint
+        # serves, but we export ONLY the pinned fingerprint into the keyring Helm verifies
+        # against — so a rogue key added to the endpoint (account compromise) is never
+        # trusted. Update the fingerprint only if the signing key is ever rotated.
+        env:
+          HELM_SECRETS_SIGNING_FP: "1F34F95B4F30BC5B06E0D7CC3F619F17002790D8"
+        run: |
+          curl -sSL https://github.com/jkroepke.gpg | gpg --import
+          gpg --list-keys "$HELM_SECRETS_SIGNING_FP"   # fail-fast if the pinned key is absent
+          gpg --export "$HELM_SECRETS_SIGNING_FP" > "$RUNNER_TEMP/helm-secrets-keyring.gpg"
+
       - name: Install Helm Secrets
         if: ${{ inputs.has-secrets }}
-        # Helm 4: plugin split into 3 packages, `--version` removed (exact URLs), signing
-        # on by default. `--verify=false` is PoC-only — set up verification before merge.
+        # Helm 4: 3 split packages, exact release URLs (no --version). Verify each package's
+        # .prov signature against the pinned keyring built in the previous step.
         run: |
           base="https://github.com/jkroepke/helm-secrets/releases/download/v4.7.7"
-          helm plugin install "$base/secrets-4.7.7.tgz" --verify=false
-          helm plugin install "$base/secrets-getter-4.7.7.tgz" --verify=false
-          helm plugin install "$base/secrets-post-renderer-4.7.7.tgz" --verify=false
+          for p in secrets secrets-getter secrets-post-renderer; do
+            helm plugin install "$base/$p-4.7.7.tgz" \
+              --verify --keyring "$RUNNER_TEMP/helm-secrets-keyring.gpg"
+          done
 
       - name: AWS Credentials
         uses: aws-actions/configure-aws-credentials@v5.1.1
