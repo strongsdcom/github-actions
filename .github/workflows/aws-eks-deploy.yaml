@@ -104,21 +104,15 @@ jobs:
 
       - name: Trust helm-secrets signing key
         if: ${{ inputs.has-secrets }}
-        # Pin the exact provenance key (jkroepke's). curl imports every key the endpoint
-        # serves, but we export ONLY the pinned fingerprint into the keyring Helm verifies
-        # against — so a rogue key added to the endpoint (account compromise) is never
-        # trusted. Update the fingerprint only if the signing key is ever rotated.
         env:
           HELM_SECRETS_SIGNING_FP: "1F34F95B4F30BC5B06E0D7CC3F619F17002790D8"
         run: |
           curl -sSL https://github.com/jkroepke.gpg | gpg --import
-          gpg --list-keys "$HELM_SECRETS_SIGNING_FP"   # fail-fast if the pinned key is absent
+          gpg --list-keys "$HELM_SECRETS_SIGNING_FP"
           gpg --export "$HELM_SECRETS_SIGNING_FP" > "$RUNNER_TEMP/helm-secrets-keyring.gpg"
 
       - name: Install Helm Secrets
         if: ${{ inputs.has-secrets }}
-        # Helm 4: 3 split packages, exact release URLs (no --version). Verify each package's
-        # .prov signature against the pinned keyring built in the previous step.
         run: |
           base="https://github.com/jkroepke/helm-secrets/releases/download/v4.7.7"
           for p in secrets secrets-getter secrets-post-renderer; do
@@ -141,10 +135,6 @@ jobs:
 
       - name: Build Helm Values
         id: build-helm-values
-        # Helm 4: no `helm secrets` wrapper — encrypted values are decrypted by the
-        # secrets:// getter (helm-secrets-getter). Use an ABSOLUTE path so the URI is
-        # secrets:///abs/path (empty host); a relative ./ would parse the leading dot as
-        # the URL host and break resolution.
         env:
           HELM_VALUES_INPUT: ${{ inputs.helm-values }}
           HAS_SECRETS: ${{ inputs.has-secrets }}
@@ -173,8 +163,6 @@ jobs:
         run: echo "deployed-at=$(date +"%Y-%m-%d %T %Z")" >> $GITHUB_OUTPUT
 
       - name: Helm Upgrade
-        # Helm 4: plain `helm upgrade` (the `helm secrets` wrapper was removed);
-        # encrypted values are decrypted by the secrets:// getter set up above.
         run: |
           helm upgrade ${{ inputs.release-name }} ./.deploy --install --rollback-on-failure --wait \
             --namespace ${{ inputs.namespace }} \
