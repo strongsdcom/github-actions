@@ -81,6 +81,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Isolate Helm data home
+        run: echo "HELM_DATA_HOME=$RUNNER_TEMP/helm4-data-${{ github.run_id }}" >> "$GITHUB_ENV"
+
       - name: Sops Binary Installer
         uses: mdgreenwald/mozilla-sops-action@v1.6.0
         if: ${{ inputs.has-secrets }}
@@ -97,16 +100,25 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4.3.1
         with:
-          version: v3.19.4
+          version: v4.2.2
+
+      - name: Trust helm-secrets signing key
+        if: ${{ inputs.has-secrets }}
+        env:
+          HELM_SECRETS_SIGNING_FP: "1F34F95B4F30BC5B06E0D7CC3F619F17002790D8"
+        run: |
+          curl -sSL https://github.com/jkroepke.gpg | gpg --import
+          gpg --list-keys "$HELM_SECRETS_SIGNING_FP"
+          gpg --export "$HELM_SECRETS_SIGNING_FP" > "$RUNNER_TEMP/helm-secrets-keyring.gpg"
 
       - name: Install Helm Secrets
         if: ${{ inputs.has-secrets }}
         run: |
-          if [[ $(helm plugin list | grep -c "secrets") -eq 0 ]]; then
-              helm plugin install https://github.com/jkroepke/helm-secrets --version v4.6.5
-          else
-              echo "Helm Secrets plugin already installed"
-          fi
+          base="https://github.com/jkroepke/helm-secrets/releases/download/v4.7.7"
+          for p in secrets secrets-getter secrets-post-renderer; do
+            helm plugin install "$base/$p-4.7.7.tgz" \
+              --verify --keyring "$RUNNER_TEMP/helm-secrets-keyring.gpg"
+          done
 
       - name: AWS Credentials
         uses: aws-actions/configure-aws-credentials@v5.1.1
@@ -123,9 +135,19 @@ jobs:
 
       - name: Build Helm Values
         id: build-helm-values
+        env:
+          HELM_VALUES_INPUT: ${{ inputs.helm-values }}
+          HAS_SECRETS: ${{ inputs.has-secrets }}
         run: |
-          helm_values=$(echo '${{ inputs.helm-values }}' | sed '/^$/d' |  sed 's/.*/-f &/' | sed '$!N;s/\n/ /')
-          echo "helm-values=$helm_values" >> $GITHUB_OUTPUT
+          helm_values=""
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            case "$HAS_SECRETS:$(basename "$f")" in
+              true:secrets*) helm_values="$helm_values -f secrets://$(realpath "$f")" ;;
+              *)             helm_values="$helm_values -f $f" ;;
+            esac
+          done <<< "$HELM_VALUES_INPUT"
+          echo "helm-values=$helm_values" >> "$GITHUB_OUTPUT"
 
       - name: Build Helm Set Values
         id: build-helm-set-values
@@ -142,7 +164,7 @@ jobs:
 
       - name: Helm Upgrade
         run: |
-          helm ${{ inputs.has-secrets && 'secrets' || '' }} upgrade ${{ inputs.release-name }} ./.deploy --install --atomic --wait \
+          helm upgrade ${{ inputs.release-name }} ./.deploy --install --rollback-on-failure --wait \
             --namespace ${{ inputs.namespace }} \
             ${{ steps.build-helm-values.outputs.helm-values }} \
             --set image.tag=${{ inputs.image-tag }} \
