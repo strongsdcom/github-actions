@@ -1,0 +1,165 @@
+on:
+  workflow_call:
+    inputs:
+      chart-path:
+        required: false
+        type: string
+        default: '.deploy'
+      helm-version:
+        required: false
+        type: string
+        default: 'v4.2.2'
+      kubeconform-version:
+        required: false
+        type: string
+        default: 'v0.8.0'
+      kubernetes-version:
+        required: false
+        type: string
+        default: '1.35.0'
+      release-name:
+        required: false
+        type: string
+        default: ''
+      runs-on:
+        required: false
+        type: string
+        default: 'strongsd-amd64'
+      schema-locations:
+        required: false
+        type: string
+        default: ''
+      template-set:
+        required: false
+        type: string
+        default: |
+          image.repository=ci-placeholder
+          image.tag=ci
+      unittest-version:
+        required: false
+        type: string
+        default: '1.1.2'
+      validate-manifests:
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  helm-unit-tests:
+    name: Helm Unit Tests
+    runs-on: ${{ inputs.runs-on }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Isolate Helm data home
+        run: echo "HELM_DATA_HOME=$RUNNER_TEMP/helm4-data-${{ github.run_id }}" >> "$GITHUB_ENV"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4.3.1
+        with:
+          version: ${{ inputs.helm-version }}
+
+      - name: Trust helm-unittest signing key
+        env:
+          UNITTEST_SIGNING_FP: "853008CD0B0A5A2DA04FF8A5616AD47F65B54AC7"
+          UNITTEST_VERSION: ${{ inputs.unittest-version }}
+        run: |
+          curl -sSL "https://raw.githubusercontent.com/helm-unittest/helm-unittest/v${UNITTEST_VERSION}/public-key.asc" | gpg --import
+          gpg --list-keys "$UNITTEST_SIGNING_FP"
+          gpg --export "$UNITTEST_SIGNING_FP" > "$RUNNER_TEMP/unittest-keyring.gpg"
+
+      - name: Install helm-unittest plugin
+        env:
+          UNITTEST_VERSION: ${{ inputs.unittest-version }}
+        run: |
+          helm plugin install \
+            "https://github.com/helm-unittest/helm-unittest/releases/download/v${UNITTEST_VERSION}/unittest-${UNITTEST_VERSION}.tgz" \
+            --verify --keyring "$RUNNER_TEMP/unittest-keyring.gpg"
+
+      - name: Run Helm unit tests
+        env:
+          CHART_PATH: ${{ inputs.chart-path }}
+        run: |
+          if ! compgen -G "$CHART_PATH/tests/*_test.yaml" > /dev/null; then
+            echo "::error::no unit test suites found in $CHART_PATH/tests/"
+            exit 1
+          fi
+          helm unittest "$CHART_PATH"
+
+      - name: Install kubeconform
+        if: ${{ inputs.validate-manifests }}
+        env:
+          KUBECONFORM_VERSION: ${{ inputs.kubeconform-version }}
+        run: |
+          case "$RUNNER_OS" in
+            Linux)  os=linux ;;
+            macOS)  os=darwin ;;
+            *)      echo "::error::unsupported runner OS: $RUNNER_OS"; exit 1 ;;
+          esac
+          case "$RUNNER_ARCH" in
+            X64)    arch=amd64 ;;
+            ARM64)  arch=arm64 ;;
+            *)      echo "::error::unsupported runner arch: $RUNNER_ARCH"; exit 1 ;;
+          esac
+
+          curl -sSL -o "$RUNNER_TEMP/kubeconform.tgz" \
+            "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-${os}-${arch}.tar.gz"
+          tar -xzf "$RUNNER_TEMP/kubeconform.tgz" -C "$RUNNER_TEMP" kubeconform
+          "$RUNNER_TEMP/kubeconform" -v
+
+      - name: Validate rendered manifests
+        if: ${{ inputs.validate-manifests }}
+        env:
+          CHART_PATH: ${{ inputs.chart-path }}
+          K8S_VERSION: ${{ inputs.kubernetes-version }}
+          RELEASE_NAME: ${{ inputs.release-name }}
+          SCHEMA_LOCATIONS: ${{ inputs.schema-locations }}
+          TEMPLATE_SET: ${{ inputs.template-set }}
+        run: |
+          release="${RELEASE_NAME:-${{ github.event.repository.name }}}"
+
+          set_args=()
+          while IFS= read -r kv; do
+            [ -n "$kv" ] && set_args+=(--set "$kv")
+          done <<< "$TEMPLATE_SET"
+
+          schema_args=()
+          while IFS= read -r loc; do
+            [ -n "$loc" ] && schema_args+=(-schema-location "$loc")
+          done <<< "$SCHEMA_LOCATIONS"
+
+          base_values=()
+          if [ -f "$CHART_PATH/tests/test-values.yaml" ]; then
+            base_values=(-f "$CHART_PATH/tests/test-values.yaml")
+          fi
+
+          envs=()
+          for dir in "$CHART_PATH"/values/*/; do
+            [ -f "$dir/config.yaml" ] && envs+=("$(basename "$dir")")
+          done
+          [ ${#envs[@]} -eq 0 ] && envs=(default)
+
+          failed=0
+          for env in "${envs[@]}"; do
+            env_values=()
+            [ "$env" != "default" ] && env_values=(-f "$CHART_PATH/values/$env/config.yaml")
+
+            echo "::group::$env"
+            if helm template "$release" "$CHART_PATH" \
+                 "${base_values[@]}" "${env_values[@]}" "${set_args[@]}" \
+                 > "$RUNNER_TEMP/render-$env.yaml"; then
+              "$RUNNER_TEMP/kubeconform" -strict -summary \
+                -kubernetes-version "$K8S_VERSION" "${schema_args[@]}" \
+                "$RUNNER_TEMP/render-$env.yaml" || failed=1
+            else
+              echo "::error::helm template failed for $env"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done
+
+          exit $failed
