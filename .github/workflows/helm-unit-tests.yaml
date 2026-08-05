@@ -24,7 +24,7 @@ on:
       runs-on:
         required: false
         type: string
-        default: 'ubuntu-latest'
+        default: 'strongsd-amd64'
       schema-locations:
         required: false
         type: string
@@ -95,8 +95,19 @@ jobs:
         env:
           KUBECONFORM_VERSION: ${{ inputs.kubeconform-version }}
         run: |
+          case "$RUNNER_OS" in
+            Linux)  os=linux ;;
+            macOS)  os=darwin ;;
+            *)      echo "::error::unsupported runner OS: $RUNNER_OS"; exit 1 ;;
+          esac
+          case "$RUNNER_ARCH" in
+            X64)    arch=amd64 ;;
+            ARM64)  arch=arm64 ;;
+            *)      echo "::error::unsupported runner arch: $RUNNER_ARCH"; exit 1 ;;
+          esac
+
           curl -sSL -o "$RUNNER_TEMP/kubeconform.tgz" \
-            "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz"
+            "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-${os}-${arch}.tar.gz"
           tar -xzf "$RUNNER_TEMP/kubeconform.tgz" -C "$RUNNER_TEMP" kubeconform
           "$RUNNER_TEMP/kubeconform" -v
 
