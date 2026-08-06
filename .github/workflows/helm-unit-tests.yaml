@@ -29,6 +29,10 @@ on:
         required: false
         type: string
         default: ''
+      skip-kinds:
+        required: false
+        type: string
+        default: ''
       template-set:
         required: false
         type: string
@@ -118,6 +122,7 @@ jobs:
           K8S_VERSION: ${{ inputs.kubernetes-version }}
           RELEASE_NAME: ${{ inputs.release-name }}
           SCHEMA_LOCATIONS: ${{ inputs.schema-locations }}
+          SKIP_KINDS: ${{ inputs.skip-kinds }}
           TEMPLATE_SET: ${{ inputs.template-set }}
         run: |
           release="${RELEASE_NAME:-${{ github.event.repository.name }}}"
@@ -131,6 +136,9 @@ jobs:
           while IFS= read -r loc; do
             [ -n "$loc" ] && schema_args+=(-schema-location "$loc")
           done <<< "$SCHEMA_LOCATIONS"
+
+          skip_args=()
+          [ -n "$SKIP_KINDS" ] && skip_args=(-skip "$SKIP_KINDS")
 
           base_values=()
           if [ -f "$CHART_PATH/tests/test-values.yaml" ]; then
@@ -153,7 +161,7 @@ jobs:
                  "${base_values[@]}" "${env_values[@]}" "${set_args[@]}" \
                  > "$RUNNER_TEMP/render-$env.yaml"; then
               "$RUNNER_TEMP/kubeconform" -strict -summary \
-                -kubernetes-version "$K8S_VERSION" "${schema_args[@]}" \
+                -kubernetes-version "$K8S_VERSION" "${schema_args[@]}" "${skip_args[@]}" \
                 "$RUNNER_TEMP/render-$env.yaml" || failed=1
             else
               echo "::error::helm template failed for $env"
