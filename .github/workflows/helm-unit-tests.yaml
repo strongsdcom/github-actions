@@ -17,6 +17,10 @@ on:
         required: false
         type: string
         default: '1.35.0'
+      lint:
+        required: false
+        type: boolean
+        default: true
       release-name:
         required: false
         type: string
@@ -93,6 +97,17 @@ jobs:
             exit 1
           fi
           helm unittest "$CHART_PATH"
+
+      - name: Lint chart
+        if: ${{ inputs.lint }}
+        env:
+          CHART_PATH: ${{ inputs.chart-path }}
+        run: |
+          lint_args=()
+          if [ -f "$CHART_PATH/tests/test-values.yaml" ]; then
+            lint_args=(-f "$CHART_PATH/tests/test-values.yaml")
+          fi
+          helm lint "$CHART_PATH" "${lint_args[@]}"
 
       - name: Install kubeconform
         if: ${{ inputs.validate-manifests }}
