@@ -121,7 +121,7 @@ jobs:
           done
 
       - name: AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5.1.1
+        uses: aws-actions/configure-aws-credentials@v6.0.0
         with:
           role-to-assume: arn:aws:iam::${{ inputs.aws-account }}:role/${{ inputs.gha-role-name }}
           aws-region: ${{ inputs.aws-region }}
